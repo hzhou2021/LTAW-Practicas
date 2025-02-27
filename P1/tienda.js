@@ -16,7 +16,7 @@ function getLocalIP() {
             }
         }
     }
-    return 'localhost'; // En caso de no encontrar una IP válida
+    return 'localhost';
 }
 
 const mimeTypes = {
@@ -31,22 +31,26 @@ const mimeTypes = {
 };
 
 const server = http.createServer((req, res) => {
+    // Normalización de la URL solicitada para prevenir acceso no autorizado
     let sanitizedPath = path.normalize(req.url).replace(/^(\.\.[/\\])+/, '');
     let filePath = path.join(ROOT_DIR, sanitizedPath);
-
+    
+    // Solicitud para la raiz
     if (req.url === '/' || req.url === '/index.html') {
         filePath = path.join(ROOT_DIR, "index.html");
     }
 
-    const extname = path.extname(filePath);
-    const contentType = mimeTypes[extname] || 'application/octet-stream';
-
+    const extname = path.extname(filePath); // Obtención de la extensión del archivo solicitado
+    const contentType = mimeTypes[extname] || 'application/octet-stream'; // Asignación del tipo MIME según la extensión del archivo
+    // Lectura del archivo solicitado
     fs.readFile(filePath, (err, data) => {
         if (err) {
             if (err.code === 'ENOENT') {
+                // Si el archivo no se encuentra, mostramos una página 404
                 const notFoundPage = path.join(ROOT_DIR, "404.html");
                 fs.readFile(notFoundPage, (err404, data404) => {
                     if (err404) {
+                        // Si no podemos leer la página 404, respondemos con un error 404 en texto plano
                         res.writeHead(404, { 'Content-Type': 'text/plain' });
                         res.end('404 - Página no encontrada');
                     } else {
@@ -55,10 +59,12 @@ const server = http.createServer((req, res) => {
                     }
                 });
             } else {
+                // Si hay un error interno en el servidor, respondemos con un error 500
                 res.writeHead(500, { 'Content-Type': 'text/plain' });
                 res.end('500 - Error interno del servidor');
             }
         } else {
+            // Si el archivo se encuentra y se lee correctamente, lo enviamos con el tipo MIME adecuado
             res.writeHead(200, { 'Content-Type': contentType });
             res.end(data, 'utf-8');
         }

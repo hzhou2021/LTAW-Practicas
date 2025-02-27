@@ -1,4 +1,16 @@
 /* Estilos generales */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
 body {
     font-family: 'Poppins', Arial, sans-serif;
     text-align: center;
@@ -12,10 +24,58 @@ body {
 header {
     background: #2c3e50;
     color: white;
-    padding: 20px;
-    font-size: 24px;
-    font-weight: bold;
+    padding: 30px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Título principal */
+header > div:first-child {
+    font-size: 40px;
+    font-weight: 900;
+    color: #27ae60;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    position: relative;
+    animation: titleAnimation 1.5s ease-out forwards;
+}
+
+header > div:first-child::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 4px;
+    background-color: #e74c3c;
+    bottom: -8px;
+    left: 0;
+    transform: scaleX(0);
+    transform-origin: bottom right;
+    animation: underlineAnimation 1.5s ease-out forwards;
+}
+
+/* Animaciones */
+@keyframes titleAnimation {
+    0% {
+        transform: scaleY(0);
+        opacity: 0;
+    }
+    100% {
+        transform: scaleY(1);
+        opacity: 1;
+    }
+}
+
+@keyframes underlineAnimation {
+    0% {
+        transform: scaleX(0);
+        transform-origin: bottom right;
+    }
+    100% {
+        transform: scaleX(1);
+        transform-origin: bottom left;
+    }
 }
 
 /* Contenedor de productos */
@@ -43,10 +103,11 @@ header {
 }
 
 .producto img {
-    width: 100%; /* La imagen ocupará el ancho completo del contenedor */
-    height: 400px; /* Ajusta la altura para que todas sean iguales */
-    object-fit: cover; /* Recorta la imagen para que llene el espacio sin distorsionarse */
-    border-radius: 10px; /* Mantiene bordes redondeados para un mejor diseño */
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    border-radius: 10px;
 }
 
 /* Título del producto */
@@ -54,6 +115,7 @@ header {
     font-size: 18px;
     margin: 10px 0;
     color: #34495e;
+    margin-bottom: 10px;
 }
 
 /* Botón de "Ver más" */
@@ -72,10 +134,46 @@ header {
     background: #2ecc71;
 }
 
+/* User y cesta */
+.iconos {
+    display: flex;
+    gap: 20px;
+}
+
+.iconos a {
+    font-size: 24px;
+    text-decoration: none;
+    color: white;
+    transition: transform 0.2s;
+}
+
+.iconos a:hover {
+    transform: scale(1.2);
+}
+
+main {
+    flex: 1;
+}
+
+/* Estilos del footer */
+footer {
+    background: #2c3e50;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    font-size: 14px;
+    margin-top: 20px;
+}
+
 /* Responsividad */
 @media (max-width: 768px) {
     .productos {
         flex-direction: column;
         align-items: center;
+        padding: 10px;
+    }
+
+    .producto {
+        width: 90%; 
     }
 }
