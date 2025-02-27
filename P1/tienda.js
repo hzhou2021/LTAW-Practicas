@@ -35,14 +35,14 @@ const server = http.createServer((req, res) => {
     let sanitizedPath = path.normalize(req.url).replace(/^(\.\.[/\\])+/, '');
     let filePath = path.join(ROOT_DIR, sanitizedPath);
     
+    //
     if (req.url === '/ls') {
-        fs.readdir(ROOT_DIR, (err, files) => {
+        fs.readdir(__dirname, (err, files) => {  // Listar archivos en la carpeta raíz
             if (err) {
                 res.writeHead(500, { 'Content-Type': 'text/plain' });
                 return res.end('500 - Error interno del servidor');
             }
-
-            // Generar HTML con la lista de archivos
+    
             let fileListHTML = `
                 <html>
                 <head>
@@ -57,7 +57,7 @@ const server = http.createServer((req, res) => {
                     </style>
                 </head>
                 <body>
-                    <h1>Lista de Archivos en Public</h1>
+                    <h1>Lista de Archivos en la Carpeta del Proyecto</h1>
                     <ul>
                         ${files.map(file => `<li><a href="/${file}">${file}</a></li>`).join('')}
                     </ul>
@@ -65,12 +65,13 @@ const server = http.createServer((req, res) => {
                     <a href="/"> Volver a la Pagina Principal</a>
                 </body>
                 </html>`;
-
+    
             res.writeHead(200, { 'Content-Type': 'text/html' });
             res.end(fileListHTML);
         });
         return;
     }
+    
 
     // Solicitud para la raiz
     if (req.url === '/' || req.url === '/index.html') {
