@@ -35,6 +35,43 @@ const server = http.createServer((req, res) => {
     let sanitizedPath = path.normalize(req.url).replace(/^(\.\.[/\\])+/, '');
     let filePath = path.join(ROOT_DIR, sanitizedPath);
     
+    if (req.url === '/ls') {
+        fs.readdir(ROOT_DIR, (err, files) => {
+            if (err) {
+                res.writeHead(500, { 'Content-Type': 'text/plain' });
+                return res.end('500 - Error interno del servidor');
+            }
+
+            // Generar HTML con la lista de archivos
+            let fileListHTML = `
+                <html>
+                <head>
+                    <title>Lista de Archivos</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; text-align: center; background-color: #f4f4f4; }
+                        h1 { color: #333; }
+                        ul { list-style: none; padding: 0; }
+                        li { background: white; margin: 5px; padding: 10px; border-radius: 5px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
+                        a { text-decoration: none; color: #27ae60; font-weight: bold; }
+                        a:hover { color: #2ecc71; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Lista de Archivos en Public</h1>
+                    <ul>
+                        ${files.map(file => `<li><a href="/${file}">${file}</a></li>`).join('')}
+                    </ul>
+                    <br>
+                    <a href="/"> Volver a la Pagina Principal</a>
+                </body>
+                </html>`;
+
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(fileListHTML);
+        });
+        return;
+    }
+
     // Solicitud para la raiz
     if (req.url === '/' || req.url === '/index.html') {
         filePath = path.join(ROOT_DIR, "index.html");
