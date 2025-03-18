@@ -1,22 +1,18 @@
-const http = require('http');
+const cad = [
+    {
+      "A": {
+          "a" :[50,30]
+      },
+      "D" : "Soy A"
+    },
 
-const PUERTO = 8080;
+    {
+      "A": {
+          "b" :[33,55]
+      },
+      "D" : "Soy B"
+    }
+]
 
-//-- SERVIDOR: Bucle principal de atención a clientes
-const server = http.createServer((req, res) => {
-
-  console.log("Petición recibida")
-
-  //-- Generar respuesta
-  //-- Código: Error. No encontrado
-  res.statusCode = 404;
-  res.statusMessage = "Not Found :-(";
-  res.setHeader('Content-Type', 'text/plain');
-  res.write("Soy el ANGRY Server\n");
-  res.end()
-
-});
-
-server.listen(PUERTO);
-
-console.log("Ejemplo 5. Angry server!. Escuchando en puerto: " + PUERTO);
+  const f = JSON.parse(cad);
+  console.log(f);
