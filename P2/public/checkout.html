@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finalizar Compra</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="checkout-container">
+    <h1>Finalizar Compra</h1>
+
+    <section id="carrito"></section>
+
+    <form id="formulario-pedido">
+      <label for="direccion">Dirección de envío:</label>
+      <input type="text" id="direccion" name="direccion" required>
+
+      <label for="tarjeta">Número de tarjeta:</label>
+      <input type="text" id="tarjeta" name="tarjeta" required>
+
+      <button type="submit">Confirmar pedido</button>
+    </form>
+
+    <p id="mensaje-confirmacion" style="color:green;"></p>
+  </main>
+
+  <script>
+    const carrito = JSON.parse(sessionStorage.getItem("carrito")) || [];
+    const usuario = sessionStorage.getItem("usuario");
+
+    if (!usuario) {
+      alert("Debes iniciar sesión para realizar un pedido.");
+      window.location.href = "login.html";
+    }
+
+    const contenedorCarrito = document.getElementById("carrito");
+    contenedorCarrito.innerHTML = "<h2>Productos en el carrito:</h2><ul>" + carrito.map(p => `<li>${p}</li>`).join('') + "</ul>";
+
+    document.getElementById("formulario-pedido").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const direccion = document.getElementById("direccion").value;
+      const tarjeta = document.getElementById("tarjeta").value;
+
+      const pedido = {
+        usuario,
+        direccion,
+        tarjeta,
+        productos: carrito
+      };
+
+      const res = await fetch("/api/pedido", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pedido)
+      });
+
+      if (res.ok) {
+        sessionStorage.removeItem("carrito");
+        document.getElementById("mensaje-confirmacion").textContent = "¡Pedido realizado con éxito!";
+      } else {
+        alert("Hubo un error al procesar el pedido.");
+      }
+    });
+  </script>
+</body>
+</html>
