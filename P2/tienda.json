@@ -1,0 +1,45 @@
+{
+    "usuarios": [
+        {
+            "nombre_usuario": "root",
+            "nombre_real": "Administrador Principal",
+            "correo": "root@tienda.com"
+        },
+        {
+            "nombre_usuario": "juan123",
+            "nombre_real": "Juan Pérez",
+            "correo": "juan.perez@example.com"
+        }
+    ],
+    "productos": [
+        {
+            "nombre": "FIfa 24",
+            "descripcion": "FIFA 24 es la última entrega de la famosa saga de videojuegos de fútbol. Con gráficos mejorados, jugabilidad más realista y nuevos modos de juego, ¡es la mejor manera de vivir el fútbol desde casa!",
+            "precio": 59.99,
+            "stock": 1
+        },
+        {
+            "nombre": "Cuphead",
+            "descripcion": "Embárcate en una aventura única con Cuphead y su hermano Mugman, luchando contra monstruos en escenarios inspirados en los dibujos animados de los años 30. ¡Desafía tus habilidades con combates frenéticos!",
+            "precio": 19.99,
+            "stock": 1
+        },
+        {
+            "nombre": "Elden Ring",
+            "descripcion": "Elden Ring, la épica aventura de rol en mundo abierto creada por FromSoftware. Con un vasto mundo por explorar, combate desafiante y una historia inmersiva, este juego te llevará a un viaje épico.",
+            "precio": 59.99,
+            "stock": 1
+        }
+    ],
+    "pedidos": [
+        {
+            "usuario": "juan123",
+            "direccion_envio": "Calle Falsa 123, Ciudad Ejemplo",
+            "numero_tarjeta": "1234-5678-9012-3456",
+            "productos_comprados": [
+                "Auriculares Bluetooth",
+                "Teclado Mecánico"
+            ]
+        }
+    ]
+}
