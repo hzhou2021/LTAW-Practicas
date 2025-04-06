@@ -11,10 +11,16 @@
     <header class="Titulo">
         <div>V-Games</div>
         <div class="iconos">
-            <a href="#">👤</a>
-            <a href="#">🛒</a>
+            <a href="login.html" id="login-icon">👤</a>
+            <a href="checkout.html" id="cart-icon">🛒</a>
         </div>
     </header>
+
+    <div class="busqueda-container">
+        <input type="text" id="busqueda" placeholder="Buscar producto...">
+        <ul id="sugerencias" class="autocomplete"></ul>
+    </div>
+
     <main>
         <section class="productos">
             <article class="producto">
@@ -49,12 +55,14 @@
             </article>
         </section>
     </main>
+
     <footer>
         <div class="footer-contenido">
             <p>&copy; 2025 V-Games. Todos los derechos reservados.</p>
             <p>Contacto: <a href="mailto:contacto@mitienda.com">contacto@mitienda.com</a></p>
         </div>
-    </footer>    
+    </footer>   
+
+    <script src="/js/main.js"></script>
 </body>
 </html>
-
