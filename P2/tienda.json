@@ -16,8 +16,15 @@
             "nombre": "FIFA 24",
             "descripcion": "El nuevo juego de fútbol.",
             "precio": 59.99,
-            "stock": 10,
+            "stock": 1,
             "imagen": "fifa.jpeg"
+        },
+        {
+            "nombre": "Counter Strike 2",
+            "descripcion": "El nuevo juego de fútbol.",
+            "precio": 29.99,
+            "stock": 1,
+            "imagen": "cs.jpeg"
         },
         {
             "nombre": "Cuphead",
