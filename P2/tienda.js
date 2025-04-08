@@ -6,13 +6,12 @@ const os = require('os');
 const PORT = 8004;
 const ROOT_DIR = path.join(__dirname, 'public');
 
-// Función para obtener la IP local de la máquina
 function getLocalIP() {
     const interfaces = os.networkInterfaces();
     for (const iface of Object.values(interfaces)) {
         for (const config of iface) {
             if (config.family === 'IPv4' && !config.internal) {
-                return config.address; // Retorna la IP local de la red
+                return config.address;
             }
         }
     }
@@ -31,18 +30,68 @@ const mimeTypes = {
 };
 
 const server = http.createServer((req, res) => {
-    // Normalización de la URL solicitada para prevenir acceso no autorizado
-    let sanitizedPath = path.normalize(req.url).replace(/^(\.\.[/\\])+/, '');
-    let filePath = path.join(ROOT_DIR, sanitizedPath);
+    // Rutas API personalizadas
+    if (req.method === "POST" && req.url === "/api/login") {
+        let body = "";
+        req.on("data", chunk => (body += chunk));
+        req.on("end", () => {
+            const { nombre } = JSON.parse(body);
+            const tienda = JSON.parse(fs.readFileSync(path.join(__dirname, "tienda.json"), "utf-8"));
+            const existe = tienda.usuarios.some(u => u.nombre === nombre);
+            if (existe) {
+                res.writeHead(200, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ ok: true }));
+            } else {
+                res.writeHead(401);
+                res.end();
+            }
+        });
+        return;
+    }
+
+    if (req.method === "GET" && req.url.startsWith("/api/busqueda")) {
+        const urlObj = new URL(req.url, `http://${req.headers.host}`);
+        const query = urlObj.searchParams.get("q")?.toLowerCase();
+        const tienda = JSON.parse(fs.readFileSync(path.join(__dirname, "tienda.json"), "utf-8"));
+        const resultados = tienda.productos.filter(p =>
+            p.nombre.toLowerCase().includes(query)
+        );
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(resultados));
+        return;
+    }
+
+    if (req.method === "POST" && req.url === "/api/pedido") {
+        let body = "";
+        req.on("data", chunk => (body += chunk));
+        req.on("end", () => {
+            const nuevoPedido = JSON.parse(body);
+            const rutaTienda = path.join(__dirname, "tienda.json");
+            const tienda = JSON.parse(fs.readFileSync(rutaTienda, "utf-8"));
+            tienda.pedidos.push(nuevoPedido);
+            fs.writeFileSync(rutaTienda, JSON.stringify(tienda, null, 2));
+            res.writeHead(200);
+            res.end();
+        });
+        return;
+    }
+
+    if (req.url === '/api/productos' && req.method === 'GET') {
+        const data = JSON.parse(fs.readFileSync('tienda.json', 'utf8'));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(data.productos));
+    }
     
-    //
+    let sanitizedPath = path.normalize(req.url).replace(/^([\.\/\\])+/g, '');
+    let filePath = path.join(ROOT_DIR, sanitizedPath);
+
     if (req.url === '/ls') {
-        fs.readdir(__dirname, (err, files) => {  // Listar archivos en la carpeta raíz
+        fs.readdir(__dirname, (err, files) => {
             if (err) {
                 res.writeHead(500, { 'Content-Type': 'text/plain' });
                 return res.end('500 - Error interno del servidor');
             }
-    
+
             let fileListHTML = `
                 <html>
                 <head>
@@ -65,30 +114,25 @@ const server = http.createServer((req, res) => {
                     <a href="/"> Volver a la Pagina Principal</a>
                 </body>
                 </html>`;
-    
+
             res.writeHead(200, { 'Content-Type': 'text/html' });
             res.end(fileListHTML);
         });
         return;
     }
-    
 
-    // Solicitud para la raiz
     if (req.url === '/' || req.url === '/index.html') {
         filePath = path.join(ROOT_DIR, "index.html");
     }
 
-    const extname = path.extname(filePath); // Obtención de la extensión del archivo solicitado
-    const contentType = mimeTypes[extname] || 'application/octet-stream'; // Asignación del tipo MIME según la extensión del archivo
-    // Lectura del archivo solicitado
+    const extname = path.extname(filePath);
+    const contentType = mimeTypes[extname] || 'application/octet-stream';
     fs.readFile(filePath, (err, data) => {
         if (err) {
             if (err.code === 'ENOENT') {
-                // Si el archivo no se encuentra, mostramos una página 404
                 const notFoundPage = path.join(ROOT_DIR, "404.html");
                 fs.readFile(notFoundPage, (err404, data404) => {
                     if (err404) {
-                        // Si no podemos leer la página 404, respondemos con un error 404 en texto plano
                         res.writeHead(404, { 'Content-Type': 'text/plain' });
                         res.end('404 - Página no encontrada');
                     } else {
@@ -97,19 +141,16 @@ const server = http.createServer((req, res) => {
                     }
                 });
             } else {
-                // Si hay un error interno en el servidor, respondemos con un error 500
                 res.writeHead(500, { 'Content-Type': 'text/plain' });
                 res.end('500 - Error interno del servidor');
             }
         } else {
-            // Si el archivo se encuentra y se lee correctamente, lo enviamos con el tipo MIME adecuado
             res.writeHead(200, { 'Content-Type': contentType });
             res.end(data, 'utf-8');
         }
     });
 });
 
-// Escuchar en todas las interfaces de red (0.0.0.0)
 server.listen(PORT, '0.0.0.0', () => {
     const localIP = getLocalIP();
     console.log(`Servidor disponible en:`);
