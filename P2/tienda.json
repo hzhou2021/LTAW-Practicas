@@ -14,14 +14,14 @@
     "productos": [
         {
             "nombre": "FIFA 24",
-            "descripcion": "El nuevo juego de fútbol.",
+            "descripcion": "FIFA 24 es la última entrega de la famosa saga de videojuegos de fútbol. Con gráficos mejorados, jugabilidad más realista y nuevos modos de juego, ¡es la mejor manera de vivir el fútbol desde casa!",
             "precio": 59.99,
             "stock": 1,
             "imagen": "fifa.jpeg"
         },
         {
             "nombre": "Counter Strike 2",
-            "descripcion": "El nuevo juego de fútbol.",
+            "descripcion": "¡La nueva versión de Counter Strike! Experimenta un juego más realista, con nuevas mecánicas, mapas y personajes. ¡La acción nunca se detiene!<",
             "precio": 29.99,
             "stock": 1,
             "imagen": "cs.jpeg"
@@ -50,7 +50,7 @@
         {
             "nombre": "Minecraft",
             "descripcion": "Minecraft es el juego de construcción por excelencia. Crea, explora y sobrevive en un mundo generado aleatoriamente. ¡Conviértete en el arquitecto de tu propio mundo y desafía a tus amigos a una aventura épica!",
-            "precio": 0,
+            "precio": 29.99,
             "stock": 1,
             "imagen": "minecraft.jpeg"
         }
