@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const PORT = 8004;
+const PORT = 8001;
 const tiendaPath = path.join(__dirname, 'tienda.json');
 
 function getLocalIP() {
