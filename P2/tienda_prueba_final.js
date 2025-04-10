@@ -70,7 +70,7 @@ const server = http.createServer((req, res) => {
                 <body>
                     <h1>Lista de Archivos en el Proyecto</h1>
                     <ul>${files.map(file => `<li><a href="/${file}">${file}</a></li>`).join('')}</ul>
-                    <br><a href="/">Volver a la Página Principal</a>
+                    <br><a href="/">Volver a la Pagina Principal</a>
                 </body>
                 </html>`;
             res.writeHead(200, { 'Content-Type': 'text/html' });
@@ -81,11 +81,11 @@ const server = http.createServer((req, res) => {
 
     // Ruta raíz o index
     if (req.url === '/' || req.url === '/index.html') {
-        const jsonPath = path.join(__dirname, 'public', 'tienda.json');
+        const jsonPath = path.join(__dirname, 'tienda.json');
         fs.readFile(jsonPath, 'utf8', (err, jsonData) => {
             if (err) {
                 res.writeHead(500, { 'Content-Type': 'text/plain' });
-                return res.end('Error leyendo tienda.json');
+                return res.end('500 - Error interno del servidor');
             }
 
             const tienda = JSON.parse(jsonData);
@@ -137,12 +137,12 @@ const server = http.createServer((req, res) => {
     // Ruta dinámica para productos: /producto/slug
     if (req.url.startsWith('/producto/')) {
         const slug = req.url.replace('/producto/', '').toLowerCase();
-        const jsonPath = path.join(__dirname, 'public', 'tienda.json');
+        const jsonPath = path.join(__dirname, 'tienda.json');
 
         fs.readFile(jsonPath, 'utf8', (err, data) => {
             if (err) {
                 res.writeHead(500, { 'Content-Type': 'text/plain' });
-                return res.end('Error leyendo tienda.json');
+                return res.end('500 - Error interno del servidor');
             }
 
             const tienda = JSON.parse(data);
@@ -184,9 +184,9 @@ const server = http.createServer((req, res) => {
                                 <li><strong>Stock disponible:</strong> ${producto.stock}</li>
                             </ul>
                             ${producto.stock > 0
-                                ? `<a href="compra.html" class="boton-compra">Comprar ahora</a>`
-                                : `<span class="agotado">Producto agotado</span>`
-                            }
+                    ? `<a href="compra.html" class="boton-compra">Comprar ahora</a>`
+                    : `<span class="agotado">Producto agotado</span>`
+                }
                         </div>
                     </section>
                 </main>
@@ -237,6 +237,7 @@ const server = http.createServer((req, res) => {
             res.end(data);
         }
     });
+
 });
 
 server.listen(PORT, '0.0.0.0', () => {
