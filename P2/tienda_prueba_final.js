@@ -148,11 +148,6 @@ const server = http.createServer((req, res) => {
             const tienda = JSON.parse(data);
             const producto = tienda.productos.find(p => slugify(p.nombre) === slug);
 
-            if (!producto) {
-                res.writeHead(404, { 'Content-Type': 'text/plain' });
-                return res.end('Producto no encontrado');
-            }
-
             const html = `
             <!DOCTYPE html>
             <html lang="es">
