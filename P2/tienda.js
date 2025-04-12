@@ -36,10 +36,17 @@ function getUserFromCookie(req) {
 
 function obtenerLoginHTML(user) {
     return user
-        ? `<span style="margin-right: 10px;">👤 ${user}</span>`
+        ? `<span style="margin-right: 10px;">👤 ${user}</span>
+           <button onclick="cerrarSesion()" style="margin-left: 5px;">Salir</button>
+           <script>
+               function cerrarSesion() {
+                   fetch('/logout', { method: 'POST' })
+                       .then(() => location.reload());
+               }
+           </script>`
         : `
         <a href="#" onclick="abrirLogin()">👤 Iniciar sesión</a>
-        <div id="modalLogin" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%); padding:20px; background:#eee; border:1px solid #ccc; z-index:1000;">
+        <div <div id="modalLogin" class="modal-login">
             <h3>Iniciar sesión</h3>
             <input type="text" id="usuario" placeholder="Usuario"><br>
             <input type="password" id="clave" placeholder="Contraseña"><br><br>
@@ -96,7 +103,7 @@ const server = http.createServer((req, res) => {
             const tienda = JSON.parse(fs.readFileSync('tienda.json', 'utf-8'));
             const usuario = tienda.usuarios.find(u => u.nombre === nombre && u.clave === clave);
             if (usuario) {
-                res.setHeader('Set-Cookie', `user=${usuario.nombre}`);
+                res.setHeader('Set-Cookie', `user=${usuario.nombre}; HttpOnly; SameSite=Strict`);
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ ok: true }));
             } else {
@@ -106,6 +113,13 @@ const server = http.createServer((req, res) => {
         });
         return;
     }
+
+    if (req.method === 'POST' && req.url === '/logout') {
+        res.setHeader('Set-Cookie', 'user=; Max-Age=0; HttpOnly; SameSite=Strict');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true }));
+        return;
+    }    
 
     if (req.url === '/' || req.url === '/index.html') {
         const jsonPath = path.join(__dirname, 'tienda.json');
@@ -177,7 +191,7 @@ const server = http.createServer((req, res) => {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>${producto.nombre} - V-Games</title>
                 <link rel="icon" type="image/x-icon" href="/favicon.ico">
-                <link rel="stylesheet" href="/styles_games.css">
+                <link rel="stylesheet" href="/styles.css">
             </head>
             <body>
                 <header>

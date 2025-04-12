@@ -13,14 +13,51 @@ html, body {
 
 body {
     font-family: 'Poppins', Arial, sans-serif;
-    text-align: center;
     background-color: #f4f4f4;
     color: #333;
     margin: 0;
     padding: 0;
+    text-align: ltr;
 }
 
-/* Estilo del encabezado */
+/* Login */
+.modal-login {
+    display: none;
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 20px;
+    background: #ffffff;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+
+.modal-login input {
+    width: 100%;
+    padding: 8px;
+    margin: 6px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.modal-login button {
+    margin-right: 10px;
+    padding: 8px 12px;
+    border: none;
+    background-color: #27ae60;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.modal-login button:hover {
+    background-color: #219150;
+}
+
+/* Header */
 header {
     background: #2c3e50;
     color: white;
@@ -31,7 +68,7 @@ header {
     align-items: center;
 }
 
-/* Título principal */
+/* Logo principal */
 header > div:first-child {
     font-size: 40px;
     font-weight: 900;
@@ -55,7 +92,6 @@ header > div:first-child::after {
     animation: underlineAnimation 1.5s ease-out forwards;
 }
 
-/* Animaciones */
 @keyframes titleAnimation {
     0% {
         transform: scaleY(0);
@@ -78,7 +114,36 @@ header > div:first-child::after {
     }
 }
 
-/* Contenedor de productos */
+/* Botón Volver */
+.Volver {
+    font-size: 18px;
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.Volver:hover {
+    color: #2ecc71;
+}
+
+/* Iconos */
+.iconos {
+    display: flex;
+    gap: 20px;
+}
+
+.iconos a {
+    font-size: 24px;
+    text-decoration: none;
+    color: white;
+    transition: transform 0.2s ease;
+}
+
+.iconos a:hover {
+    transform: scale(1.2);
+}
+
+/* Productos */
 .productos {
     display: flex;
     justify-content: center;
@@ -87,7 +152,6 @@ header > div:first-child::after {
     padding: 20px;
 }
 
-/* Tarjeta de producto */
 .producto {
     background: white;
     border-radius: 10px;
@@ -110,15 +174,12 @@ header > div:first-child::after {
     border-radius: 10px;
 }
 
-/* Título del producto */
 .producto h2 {
     font-size: 18px;
-    margin: 10px 0;
+    margin: 10px 0 10px;
     color: #34495e;
-    margin-bottom: 10px;
 }
 
-/* Botón de "Ver más" */
 .producto a {
     display: inline-block;
     padding: 10px 15px;
@@ -134,28 +195,86 @@ header > div:first-child::after {
     background: #2ecc71;
 }
 
-/* User y cesta */
-.iconos {
+/* Detalle de producto */
+.producto-detalle {
     display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.detalle-producto {
+    display: flex;
+    justify-content: space-between;
     gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+    align-items: flex-start;
 }
 
-.iconos a {
-    font-size: 24px;
-    text-decoration: none;
+.detalle-producto img {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.detalle-producto img:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.informacion {
+    max-width: 500px;
+}
+
+.informacion h1 {
+    font-size: 36px;
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+.descripcion {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #555;
+}
+
+.informacion ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.informacion ul li {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.boton-compra {
+    display: inline-block;
+    padding: 10px 15px;
+    background: #27ae60;
     color: white;
-    transition: transform 0.2s;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 5px;
+    text-align: center;
+    margin-top: 20px;
+    transition: background 0.3s ease;
 }
 
-.iconos a:hover {
-    transform: scale(1.2);
+.boton-compra:hover {
+    background: #2ecc71;
 }
 
+/* Main y Footer */
 main {
     flex: 1;
 }
 
-/* Estilos del footer */
 footer {
     background: #2c3e50;
     color: white;
@@ -165,7 +284,7 @@ footer {
     margin-top: 20px;
 }
 
-/* Responsividad */
+/* Responsive */
 @media (max-width: 768px) {
     .productos {
         flex-direction: column;
@@ -174,6 +293,20 @@ footer {
     }
 
     .producto {
-        width: 90%; 
+        width: 90%;
+    }
+
+    .detalle-producto {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .detalle-producto img {
+        width: 80%;
+        max-width: 400px;
+    }
+
+    .informacion {
+        max-width: 100%;
     }
 }
