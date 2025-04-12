@@ -34,6 +34,42 @@ function getUserFromCookie(req) {
     return match ? match.split('=')[1] : null;
 }
 
+function obtenerLoginHTML(user) {
+    return user
+        ? `<span style="margin-right: 10px;">👤 ${user}</span>`
+        : `
+        <a href="#" onclick="abrirLogin()">👤 Iniciar sesión</a>
+        <div id="modalLogin" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%); padding:20px; background:#eee; border:1px solid #ccc; z-index:1000;">
+            <h3>Iniciar sesión</h3>
+            <input type="text" id="usuario" placeholder="Usuario"><br>
+            <input type="password" id="clave" placeholder="Contraseña"><br><br>
+            <button onclick="enviarLogin()">Entrar</button>
+            <button onclick="cerrarLogin()">Cancelar</button>
+            <p id="errorLogin" style="color:red;"></p>
+        </div>
+        <script>
+            function abrirLogin() {
+                document.getElementById('modalLogin').style.display = 'block';
+            }
+            function cerrarLogin() {
+                document.getElementById('modalLogin').style.display = 'none';
+                document.getElementById('errorLogin').textContent = '';
+            }
+            async function enviarLogin() {
+                const nombre = document.getElementById('usuario').value;
+                const clave = document.getElementById('clave').value;
+                const res = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre, clave })
+                });
+                const data = await res.json();
+                if (data.ok) location.reload();
+                else document.getElementById('errorLogin').textContent = 'Usuario o contraseña incorrectos';
+            }
+        </script>`;
+}
+
 const mimeTypes = {
     '.html': 'text/html',
     '.css': 'text/css',
@@ -71,22 +107,6 @@ const server = http.createServer((req, res) => {
         return;
     }
 
-    if (req.url === '/ls') {
-        fs.readdir(__dirname, (err, files) => {
-            if (err) {
-                res.writeHead(500, { 'Content-Type': 'text/plain' });
-                return res.end('500 - Error interno del servidor');
-            }
-            const html = `
-                <html><head><title>Lista</title></head><body>
-                <ul>${files.map(file => `<li><a href="/${file}">${file}</a></li>`).join('')}</ul>
-                </body></html>`;
-            res.writeHead(200, { 'Content-Type': 'text/html' });
-            return res.end(html);
-        });
-        return;
-    }
-
     if (req.url === '/' || req.url === '/index.html') {
         const jsonPath = path.join(__dirname, 'tienda.json');
         fs.readFile(jsonPath, 'utf8', (err, jsonData) => {
@@ -103,32 +123,7 @@ const server = http.createServer((req, res) => {
                 </article>
             `).join('');
 
-            const loginHTML = user ? `<p>Conectado como: <b>${user}</b></p>` : `
-                <a href="#" onclick="abrirLogin()">👤 Iniciar sesión</a>
-                <div id="modalLogin" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%); padding:20px; background:#eee; border:1px solid #ccc; z-index:1000;">
-                    <h3>Iniciar sesión</h3>
-                    <input type="text" id="usuario" placeholder="Usuario"><br>
-                    <input type="password" id="clave" placeholder="Contraseña"><br><br>
-                    <button onclick="enviarLogin()">Entrar</button>
-                    <button onclick="cerrarLogin()">Cancelar</button>
-                    <p id="errorLogin" style="color:red;"></p>
-                </div>
-                <script>
-                function abrirLogin() { document.getElementById('modalLogin').style.display = 'block'; }
-                function cerrarLogin() { document.getElementById('modalLogin').style.display = 'none'; document.getElementById('errorLogin').textContent = ''; }
-                async function enviarLogin() {
-                    const nombre = document.getElementById('usuario').value;
-                    const clave = document.getElementById('clave').value;
-                    const res = await fetch('/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ nombre, clave })
-                    });
-                    const data = await res.json();
-                    if (data.ok) location.reload();
-                    else document.getElementById('errorLogin').textContent = 'Usuario o contraseña incorrectos';
-                }
-                </script>`;
+            const loginHTML = obtenerLoginHTML(user);
 
             const html = `
                 <!DOCTYPE html>
@@ -144,7 +139,10 @@ const server = http.createServer((req, res) => {
                         <div class="iconos">${loginHTML}<a href="#">🛒</a></div>
                     </header>
                     <main><section class="productos">${productosHTML}</section></main>
-                    <footer><p>&copy; 2025 V-Games</p></footer>
+                    <footer>
+                        <p>&copy; 2025 V-Games. Todos los derechos reservados.</p>
+                        <p>Contacto: <a href="mailto:contacto@mitienda.com">contacto@mitienda.com</a></p>
+                    </footer>
                 </body>
                 </html>`;
 
@@ -164,6 +162,13 @@ const server = http.createServer((req, res) => {
             }
             const tienda = JSON.parse(data);
             const producto = tienda.productos.find(p => slugify(p.nombre) === slug);
+
+            const loginHTML = obtenerLoginHTML(user);
+            const botonCompra = producto.stock > 0
+                ? (user ? `<a href="compra.html" class="boton-compra">Comprar ahora</a>`
+                       : `<p style="color:red;">Inicia sesión para comprar</p>`)
+                : `<span class="agotado">Producto agotado</span>`;
+
             const html = `
             <!DOCTYPE html>
             <html lang="es">
@@ -172,17 +177,16 @@ const server = http.createServer((req, res) => {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>${producto.nombre} - V-Games</title>
                 <link rel="icon" type="image/x-icon" href="/favicon.ico">
-                <link rel="stylesheet" href="/games.css">
+                <link rel="stylesheet" href="/styles_games.css">
             </head>
             <body>
                 <header>
                     <a href="/" class="Volver">Volver al inicio</a>
                     <div class="iconos">
-                        <a href="#">👤</a>
-                        <a href="#">🛒</a>
+                        ${loginHTML}<a href="#">🛒</a>
                     </div>
                 </header>
-                
+
                 <main class="producto-detalle">
                     <section class="detalle-producto">
                         <img src="/${producto.imagen}" alt="${producto.nombre}">
@@ -194,10 +198,7 @@ const server = http.createServer((req, res) => {
                                 <li><strong>Precio:</strong> ${producto.precio > 0 ? `$${producto.precio.toFixed(2)}` : 'Gratis'}</li>
                                 <li><strong>Stock disponible:</strong> ${producto.stock}</li>
                             </ul>
-                            ${producto.stock > 0
-                    ? `<a href="compra.html" class="boton-compra">Comprar ahora</a>`
-                    : `<span class="agotado">Producto agotado</span>`
-                }
+                            ${botonCompra}
                         </div>
                     </section>
                 </main>
@@ -217,11 +218,60 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    if (req.url === '/ls') {
+        fs.readdir(__dirname, (err, files) => {
+            if (err) {
+                res.writeHead(500, { 'Content-Type': 'text/plain' });
+                return res.end('500 - Error interno del servidor');
+            }
+
+            const html = `
+                <html>
+                <head>
+                    <title>Lista de Archivos</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; background: #f4f4f4; text-align: center; }
+                        h1 { color: #333; }
+                        ul { list-style: none; padding: 0; }
+                        li { margin: 5px; background: #fff; padding: 10px; border-radius: 5px; }
+                        a { text-decoration: none; color: #27ae60; font-weight: bold; }
+                        a:hover { color: #2ecc71; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Lista de Archivos en el Proyecto</h1>
+                    <ul>${files.map(file => `<li><a href="/${file}">${file}</a></li>`).join('')}</ul>
+                    <br><a href="/">Volver a la Pagina Principal</a>
+                </body>
+                </html>`;
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            return res.end(html);
+        });
+        return;
+    }
+
     fs.readFile(filePath, (err, data) => {
         if (err) {
             if (err.code === 'ENOENT') {
                 res.writeHead(404, { 'Content-Type': 'text/html' });
-                return res.end('<h1>404 - Página no encontrada</h1>');
+                return res.end(`
+                    <!DOCTYPE html>
+                    <html lang="es">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>404 - Página No Encontrada</title>
+                        <link rel="stylesheet" href="/styles_404.css">
+                    </head>
+                    <body>
+                        <div class="container">
+                            <img class="img-404" src="https://i.imgur.com/qIufhof.png" alt="404 Error">
+                            <h1>404</h1>
+                            <h2>Oops! Página no encontrada</h2>
+                            <p>Lo sentimos, pero la página que buscas no existe o ha sido movida.</p>
+                            <a href="/">Volver al inicio</a>
+                        </div>
+                    </body>
+                    </html>`);
             } else {
                 res.writeHead(500, { 'Content-Type': 'text/plain' });
                 return res.end('500 - Error interno del servidor');

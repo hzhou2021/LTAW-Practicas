@@ -11,13 +11,20 @@ html, body {
     flex-direction: column;
 }
 
+body {
+    font-family: 'Poppins', Arial, sans-serif;
+    text-align: rtl;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
 /* Estilo del encabezado */
 header {
     background: #2c3e50;
     color: white;
-    padding: 20px;
-    font-size: 24px;
-    font-weight: bold;
+    padding: 30px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
     display: flex;
     justify-content: space-between;
@@ -35,11 +42,15 @@ header {
     color: #2ecc71;
 }
 
+.iconos {
+    display: flex;
+    gap: 20px;
+}
+
 .iconos a {
     font-size: 24px;
     text-decoration: none;
     color: white;
-    margin-left: 15px;
     transition: transform 0.2s ease;
 }
 
@@ -60,12 +71,12 @@ header {
     gap: 20px;
     max-width: 1000px;
     margin: 0 auto;
-    align-items: flex-start; 
+    align-items: flex-start;
 }
 
 .detalle-producto img {
     width: 100%;
-    max-width: 400px; 
+    max-width: 400px;
     height: auto;
     object-fit: cover;
     border-radius: 10px;
@@ -107,7 +118,7 @@ header {
 
 .boton-compra {
     display: inline-block;
-    padding: 15px 25px;
+    padding: 10px 15px;
     background: #27ae60;
     color: white;
     text-decoration: none;

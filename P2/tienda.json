@@ -24,7 +24,7 @@
     },
     {
         "nombre": "Counter Strike 2",
-        "descripcion": "¡La nueva versión de Counter Strike! Experimenta un juego más realista, con nuevas mecánicas, mapas y personajes. ¡La acción nunca se detiene!<",
+        "descripcion": "¡La nueva versión de Counter Strike! Experimenta un juego más realista, con nuevas mecánicas, mapas y personajes. ¡La acción nunca se detiene!",
         "precio": 29.99,
         "stock": 1,
         "imagen": "cs.jpeg",
