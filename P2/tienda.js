@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const PORT = 8004;
+const PORT = 8007;
 const ROOT_DIR = path.join(__dirname, 'public');
 
 function getLocalIP() {
@@ -18,6 +18,22 @@ function getLocalIP() {
     return 'localhost';
 }
 
+function slugify(nombre) {
+    return nombre
+        .toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+}
+
+function getUserFromCookie(req) {
+    const cookie = req.headers.cookie;
+    if (!cookie) return null;
+    const match = cookie.split(';').map(c => c.trim()).find(c => c.startsWith('user='));
+    return match ? match.split('=')[1] : null;
+}
+
 const mimeTypes = {
     '.html': 'text/html',
     '.css': 'text/css',
@@ -30,60 +46,30 @@ const mimeTypes = {
 };
 
 const server = http.createServer((req, res) => {
-    // Rutas API personalizadas
-    if (req.method === "POST" && req.url === "/api/login") {
-        let body = "";
-        req.on("data", chunk => (body += chunk));
-        req.on("end", () => {
-            const { nombre } = JSON.parse(body);
-            const tienda = JSON.parse(fs.readFileSync(path.join(__dirname, "tienda.json"), "utf-8"));
-            const existe = tienda.usuarios.some(u => u.nombre === nombre);
-            if (existe) {
-                res.writeHead(200, { "Content-Type": "application/json" });
+    let sanitizedPath = path.normalize(req.url).replace(/^([\.]{2}[\/\\])+/, '');
+    let filePath = path.join(ROOT_DIR, sanitizedPath);
+    const extname = path.extname(filePath);
+    const contentType = mimeTypes[extname] || 'application/octet-stream';
+    const user = getUserFromCookie(req);
+
+    if (req.method === 'POST' && req.url === '/login') {
+        let body = '';
+        req.on('data', chunk => { body += chunk; });
+        req.on('end', () => {
+            const { nombre, clave } = JSON.parse(body);
+            const tienda = JSON.parse(fs.readFileSync('tienda.json', 'utf-8'));
+            const usuario = tienda.usuarios.find(u => u.nombre === nombre && u.clave === clave);
+            if (usuario) {
+                res.setHeader('Set-Cookie', `user=${usuario.nombre}`);
+                res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ ok: true }));
             } else {
-                res.writeHead(401);
-                res.end();
+                res.writeHead(401, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false }));
             }
         });
         return;
     }
-
-    if (req.method === "GET" && req.url.startsWith("/api/busqueda")) {
-        const urlObj = new URL(req.url, `http://${req.headers.host}`);
-        const query = urlObj.searchParams.get("q")?.toLowerCase();
-        const tienda = JSON.parse(fs.readFileSync(path.join(__dirname, "tienda.json"), "utf-8"));
-        const resultados = tienda.productos.filter(p =>
-            p.nombre.toLowerCase().includes(query)
-        );
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify(resultados));
-        return;
-    }
-
-    if (req.method === "POST" && req.url === "/api/pedido") {
-        let body = "";
-        req.on("data", chunk => (body += chunk));
-        req.on("end", () => {
-            const nuevoPedido = JSON.parse(body);
-            const rutaTienda = path.join(__dirname, "tienda.json");
-            const tienda = JSON.parse(fs.readFileSync(rutaTienda, "utf-8"));
-            tienda.pedidos.push(nuevoPedido);
-            fs.writeFileSync(rutaTienda, JSON.stringify(tienda, null, 2));
-            res.writeHead(200);
-            res.end();
-        });
-        return;
-    }
-
-    if (req.url === '/api/productos' && req.method === 'GET') {
-        const data = JSON.parse(fs.readFileSync('tienda.json', 'utf8'));
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(data.productos));
-    }
-    
-    let sanitizedPath = path.normalize(req.url).replace(/^([\.\/\\])+/g, '');
-    let filePath = path.join(ROOT_DIR, sanitizedPath);
 
     if (req.url === '/ls') {
         fs.readdir(__dirname, (err, files) => {
@@ -91,62 +77,158 @@ const server = http.createServer((req, res) => {
                 res.writeHead(500, { 'Content-Type': 'text/plain' });
                 return res.end('500 - Error interno del servidor');
             }
-
-            let fileListHTML = `
-                <html>
-                <head>
-                    <title>Lista de Archivos</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; text-align: center; background-color: #f4f4f4; }
-                        h1 { color: #333; }
-                        ul { list-style: none; padding: 0; }
-                        li { background: white; margin: 5px; padding: 10px; border-radius: 5px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
-                        a { text-decoration: none; color: #27ae60; font-weight: bold; }
-                        a:hover { color: #2ecc71; }
-                    </style>
-                </head>
-                <body>
-                    <h1>Lista de Archivos en la Carpeta del Proyecto</h1>
-                    <ul>
-                        ${files.map(file => `<li><a href="/${file}">${file}</a></li>`).join('')}
-                    </ul>
-                    <br>
-                    <a href="/"> Volver a la Pagina Principal</a>
-                </body>
-                </html>`;
-
+            const html = `
+                <html><head><title>Lista</title></head><body>
+                <ul>${files.map(file => `<li><a href="/${file}">${file}</a></li>`).join('')}</ul>
+                </body></html>`;
             res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.end(fileListHTML);
+            return res.end(html);
         });
         return;
     }
 
     if (req.url === '/' || req.url === '/index.html') {
-        filePath = path.join(ROOT_DIR, "index.html");
+        const jsonPath = path.join(__dirname, 'tienda.json');
+        fs.readFile(jsonPath, 'utf8', (err, jsonData) => {
+            if (err) {
+                res.writeHead(500, { 'Content-Type': 'text/plain' });
+                return res.end('500 - Error interno del servidor');
+            }
+            const tienda = JSON.parse(jsonData);
+            const productosHTML = tienda.productos.map(producto => `
+                <article class="producto">
+                    <img src="${producto.imagen}" alt="${producto.nombre}">
+                    <h2>${producto.nombre}</h2>
+                    <a href="/producto/${slugify(producto.nombre)}">Ver más</a>
+                </article>
+            `).join('');
+
+            const loginHTML = user ? `<p>Conectado como: <b>${user}</b></p>` : `
+                <a href="#" onclick="abrirLogin()">👤 Iniciar sesión</a>
+                <div id="modalLogin" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%); padding:20px; background:#eee; border:1px solid #ccc; z-index:1000;">
+                    <h3>Iniciar sesión</h3>
+                    <input type="text" id="usuario" placeholder="Usuario"><br>
+                    <input type="password" id="clave" placeholder="Contraseña"><br><br>
+                    <button onclick="enviarLogin()">Entrar</button>
+                    <button onclick="cerrarLogin()">Cancelar</button>
+                    <p id="errorLogin" style="color:red;"></p>
+                </div>
+                <script>
+                function abrirLogin() { document.getElementById('modalLogin').style.display = 'block'; }
+                function cerrarLogin() { document.getElementById('modalLogin').style.display = 'none'; document.getElementById('errorLogin').textContent = ''; }
+                async function enviarLogin() {
+                    const nombre = document.getElementById('usuario').value;
+                    const clave = document.getElementById('clave').value;
+                    const res = await fetch('/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nombre, clave })
+                    });
+                    const data = await res.json();
+                    if (data.ok) location.reload();
+                    else document.getElementById('errorLogin').textContent = 'Usuario o contraseña incorrectos';
+                }
+                </script>`;
+
+            const html = `
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>V-Games</title>
+                    <link rel="stylesheet" href="/styles.css">
+                </head>
+                <body>
+                    <header class="Titulo">
+                        <div>V-Games</div>
+                        <div class="iconos">${loginHTML}<a href="#">🛒</a></div>
+                    </header>
+                    <main><section class="productos">${productosHTML}</section></main>
+                    <footer><p>&copy; 2025 V-Games</p></footer>
+                </body>
+                </html>`;
+
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(html);
+        });
+        return;
     }
 
-    const extname = path.extname(filePath);
-    const contentType = mimeTypes[extname] || 'application/octet-stream';
+    if (req.url.startsWith('/producto/')) {
+        const slug = req.url.replace('/producto/', '').toLowerCase();
+        const jsonPath = path.join(__dirname, 'tienda.json');
+        fs.readFile(jsonPath, 'utf8', (err, data) => {
+            if (err) {
+                res.writeHead(500, { 'Content-Type': 'text/plain' });
+                return res.end('500 - Error interno del servidor');
+            }
+            const tienda = JSON.parse(data);
+            const producto = tienda.productos.find(p => slugify(p.nombre) === slug);
+            const html = `
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>${producto.nombre} - V-Games</title>
+                <link rel="icon" type="image/x-icon" href="/favicon.ico">
+                <link rel="stylesheet" href="/games.css">
+            </head>
+            <body>
+                <header>
+                    <a href="/" class="Volver">Volver al inicio</a>
+                    <div class="iconos">
+                        <a href="#">👤</a>
+                        <a href="#">🛒</a>
+                    </div>
+                </header>
+                
+                <main class="producto-detalle">
+                    <section class="detalle-producto">
+                        <img src="/${producto.imagen}" alt="${producto.nombre}">
+                        <div class="informacion">
+                            <h1>${producto.nombre}</h1>
+                            <p class="descripcion">${producto.descripcion}</p>
+                            <ul>
+                                <li><strong>Género:</strong> ${producto.genero}</li>
+                                <li><strong>Precio:</strong> ${producto.precio > 0 ? `$${producto.precio.toFixed(2)}` : 'Gratis'}</li>
+                                <li><strong>Stock disponible:</strong> ${producto.stock}</li>
+                            </ul>
+                            ${producto.stock > 0
+                    ? `<a href="compra.html" class="boton-compra">Comprar ahora</a>`
+                    : `<span class="agotado">Producto agotado</span>`
+                }
+                        </div>
+                    </section>
+                </main>
+
+                <footer>
+                    <div class="footer-contenido">
+                        <p>&copy; 2025 V-Games. Todos los derechos reservados.</p>
+                        <p>Contacto: <a href="mailto:contacto@mitienda.com">contacto@mitienda.com</a></p>
+                    </div>
+                </footer>
+            </body>
+            </html>
+            `;
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(html);
+        });
+        return;
+    }
+
     fs.readFile(filePath, (err, data) => {
         if (err) {
             if (err.code === 'ENOENT') {
-                const notFoundPage = path.join(ROOT_DIR, "404.html");
-                fs.readFile(notFoundPage, (err404, data404) => {
-                    if (err404) {
-                        res.writeHead(404, { 'Content-Type': 'text/plain' });
-                        res.end('404 - Página no encontrada');
-                    } else {
-                        res.writeHead(404, { 'Content-Type': 'text/html' });
-                        res.end(data404, 'utf-8');
-                    }
-                });
+                res.writeHead(404, { 'Content-Type': 'text/html' });
+                return res.end('<h1>404 - Página no encontrada</h1>');
             } else {
                 res.writeHead(500, { 'Content-Type': 'text/plain' });
-                res.end('500 - Error interno del servidor');
+                return res.end('500 - Error interno del servidor');
             }
         } else {
             res.writeHead(200, { 'Content-Type': contentType });
-            res.end(data, 'utf-8');
+            res.end(data);
         }
     });
 });
