@@ -184,8 +184,8 @@ const server = http.createServer((req, res) => {
             const loginHTML = obtenerLoginHTML(user);
             const botonCompra = producto.stock > 0
                 ? (user ? `<a href="compra.html" class="boton-compra">Comprar ahora</a>`
-                       : `<p style="color:red;">Inicia sesión para comprar</p>`)
-                : `<span class="agotado">Producto agotado</span>`;
+                       : `<p class="productoStock">Inicia sesión para comprar</p>`)
+                : `<span class="productoStock">Producto agotado</span>`;
 
             const html = `
             <!DOCTYPE html>

@@ -310,6 +310,18 @@ header > div:first-child::after {
     background: #2ecc71;
 }
 
+.productoStock {
+    display: inline-block;
+    padding: 10px 15px;
+    background: red;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 5px;
+    text-align: center;
+    margin-top: 20px;
+}
+
 /* Main y Footer */
 main {
     flex: 1;
