@@ -36,8 +36,12 @@ function getUserFromCookie(req) {
 
 function obtenerLoginHTML(user) {
     return user
-        ? `<span style="margin-right: 10px;">👤 ${user}</span>
-           <button onclick="cerrarSesion()" style="margin-left: 5px;">Salir</button>
+        ? `
+        <div class="usuario-sesion">
+        <span class="nombre-usuario">👤 ${user}</span>
+        <button class="boton-salir" onclick="cerrarSesion()">Salir</button>
+        </div>
+
            <script>
                function cerrarSesion() {
                    fetch('/logout', { method: 'POST' })
