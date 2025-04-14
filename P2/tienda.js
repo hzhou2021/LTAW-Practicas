@@ -105,6 +105,12 @@ function obtenerLoginHTML(user, req) {
                 if (data.ok) location.reload();
                 else document.getElementById('errorLogin').textContent = 'Usuario o contraseña incorrectos';
             }
+            document.getElementById('modalLogin').addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();  
+                    enviarLogin();
+                }
+            });
         </script>`;
 }
 
