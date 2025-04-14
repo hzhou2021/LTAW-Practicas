@@ -82,20 +82,13 @@ body {
 }
 
 .boton-salir:hover {
-    background-color: #c0392b;
-}
-
-.boton-salir:hover  {
     font-size: 18px;
     text-decoration: none;
     color: white;
-    transition: transform 0.2s ease;
-}
-
-.boton-salir:hover  {
+    transition: transform 0.2s ease, background-color 0.3s ease;
     transform: scale(1.1);
+    background-color: #c0392b;
 }
-
 
 /* Carrito */
 .modal-cart {
@@ -155,6 +148,10 @@ body {
 
 .modal-cart button:hover {
     background-color: #219150;
+}
+
+#contador-carrito {
+    color: red;
 }
 
 /* Header */
@@ -293,6 +290,10 @@ header > div:first-child::after {
 
 .producto a:hover {
     background: #2ecc71;
+}
+
+.mensaje-login {
+    color: red;
 }
 
 /* Detalle de producto */

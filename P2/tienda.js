@@ -55,7 +55,7 @@ function contarCarrito(req) {
 
 function obtenerLoginHTML(user, req) {
     const totalCarrito = contarCarrito(req);
-    const carritoHTML = `<a href="/checkout">🛒 <span id="contador-carrito" style="color:red;">${totalCarrito}</span></a>`;
+    const carritoHTML = `<a href="/checkout">🛒 <span id="contador-carrito">${totalCarrito}</span></a>`;
 
     return user
         ? `
@@ -65,26 +65,10 @@ function obtenerLoginHTML(user, req) {
             ${carritoHTML}
         </div>
 
-        <div id="modalCarrito" class="modal-cart">
-            <h2>Tu Carrito</h2>
-            <ul id="carritoItems"></ul>
-            <div class="total" id="totalCarrito">Total: $0</div>
-            <button onclick="window.location.href='/checkout'">Finalizar compra</button>
-            <button onclick="cerrarCarrito()">Cerrar</button>
-        </div>
-
         <script>
             function cerrarSesion() {
                 fetch('/logout', { method: 'POST' })
                     .then(() => location.reload());
-            }
-
-            function abrirCarrito() {
-                document.getElementById('modalCarrito').style.display = 'block';
-            }
-
-            function cerrarCarrito() {
-                document.getElementById('modalCarrito').style.display = 'none';
             }
         </script>
         `
@@ -98,14 +82,6 @@ function obtenerLoginHTML(user, req) {
             <button onclick="enviarLogin()">Entrar</button>
             <button onclick="cerrarLogin()">Cancelar</button>
             <p id="errorLogin" style="color:red;"></p>
-        </div>
-
-        <div id="modalCarrito" class="modal-cart">
-            <h2>Tu Carrito</h2>
-            <ul id="carritoItems"></ul>
-            <div class="total" id="totalCarrito">Total: $0</div>
-            <button onclick="window.location.href='/checkout'">Finalizar compra</button>
-            <button onclick="cerrarCarrito()">Cerrar</button>
         </div>
 
         <script>
@@ -127,14 +103,6 @@ function obtenerLoginHTML(user, req) {
                 const data = await res.json();
                 if (data.ok) location.reload();
                 else document.getElementById('errorLogin').textContent = 'Usuario o contraseña incorrectos';
-            }
-
-            function abrirCarrito() {
-                document.getElementById('modalCarrito').style.display = 'block';
-            }
-
-            function cerrarCarrito() {
-                document.getElementById('modalCarrito').style.display = 'none';
             }
         </script>`;
 }
@@ -256,7 +224,7 @@ const server = http.createServer((req, res) => {
                 }
                 </script>
                 `
-                : `<p style="color:red;">Inicia sesión para comprar</p>`)
+                : `'<p class="mensaje-login">Inicia sesión para comprar</p>'`)
                 : `<span class="productoStock">Producto agotado</span>`;
             const html = `
             <!DOCTYPE html>
