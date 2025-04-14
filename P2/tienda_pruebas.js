@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const PORT = 8009;
+const PORT = 8004;
 const ROOT_DIR = path.join(__dirname, 'public');
 
 function getLocalIP() {
@@ -55,43 +55,13 @@ function contarCarrito(req) {
 
 function obtenerLoginHTML(user, req) {
     const totalCarrito = contarCarrito(req);
-    const carritoHTML = `<a href="/checkout">🛒 <span id="contador-carrito" style="color:red;">${totalCarrito}</span></a>`;
-
+    const carritoHTML = `<a href="/checkout"><span style="color:red;">${totalCarrito}🛒</span></a>`;
     return user
-        ? `
-        <div class="usuario-sesion">
-            <span class="nombre-usuario">👤 ${user}</span>
-            <button class="boton-salir" onclick="cerrarSesion()">Salir</button>
-            ${carritoHTML}
-        </div>
-
-        <div id="modalCarrito" class="modal-cart">
-            <h2>Tu Carrito</h2>
-            <ul id="carritoItems"></ul>
-            <div class="total" id="totalCarrito">Total: $0</div>
-            <button onclick="window.location.href='/checkout'">Finalizar compra</button>
-            <button onclick="cerrarCarrito()">Cerrar</button>
-        </div>
-
-        <script>
-            function cerrarSesion() {
-                fetch('/logout', { method: 'POST' })
-                    .then(() => location.reload());
-            }
-
-            function abrirCarrito() {
-                document.getElementById('modalCarrito').style.display = 'block';
-            }
-
-            function cerrarCarrito() {
-                document.getElementById('modalCarrito').style.display = 'none';
-            }
-        </script>
-        `
+        ? `<span style="margin-right: 10px;">👤 ${user}</span>${carritoHTML}`
         : `
-        <a href="#" onclick="abrirLogin()"> 👤Iniciar sesión</a>
+        <a href="#" onclick="abrirLogin()">👤 Iniciar sesión</a>
         ${carritoHTML}
-        <div id="modalLogin" class="modal-login">
+        <div id="modalLogin" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%); padding:20px; background:#eee; border:1px solid #ccc; z-index:1000;">
             <h3>Iniciar sesión</h3>
             <input type="text" id="usuario" placeholder="Usuario"><br>
             <input type="password" id="clave" placeholder="Contraseña"><br><br>
@@ -99,15 +69,6 @@ function obtenerLoginHTML(user, req) {
             <button onclick="cerrarLogin()">Cancelar</button>
             <p id="errorLogin" style="color:red;"></p>
         </div>
-
-        <div id="modalCarrito" class="modal-cart">
-            <h2>Tu Carrito</h2>
-            <ul id="carritoItems"></ul>
-            <div class="total" id="totalCarrito">Total: $0</div>
-            <button onclick="window.location.href='/checkout'">Finalizar compra</button>
-            <button onclick="cerrarCarrito()">Cerrar</button>
-        </div>
-
         <script>
             function abrirLogin() {
                 document.getElementById('modalLogin').style.display = 'block';
@@ -127,14 +88,6 @@ function obtenerLoginHTML(user, req) {
                 const data = await res.json();
                 if (data.ok) location.reload();
                 else document.getElementById('errorLogin').textContent = 'Usuario o contraseña incorrectos';
-            }
-
-            function abrirCarrito() {
-                document.getElementById('modalCarrito').style.display = 'block';
-            }
-
-            function cerrarCarrito() {
-                document.getElementById('modalCarrito').style.display = 'none';
             }
         </script>`;
 }
@@ -245,14 +198,8 @@ const server = http.createServer((req, res) => {
                 <button class="boton-compra" onclick="agregarAlCarrito('${producto.nombre}')">Añadir al carrito</button>
                 <script>
                 function agregarAlCarrito(nombre) {
-                    fetch('/add-to-cart?producto=' + encodeURIComponent(nombre))
-                        .then(() => {
-                            const contador = document.querySelector('#contador-carrito');
-                            if (contador) {
-                                let actual = parseInt(contador.textContent || '0');
-                                contador.textContent = actual + 1;
-                            }
-                        });
+                fetch('/add-to-cart?producto=' + encodeURIComponent(nombre))
+                    .then(() => alert('Producto añadido al carrito.'));
                 }
                 </script>
                 `
@@ -326,7 +273,7 @@ const server = http.createServer((req, res) => {
         let cart = getCartFromCookie(req);
         const index = cart.indexOf(producto);
         if (index !== -1) {
-            cart.splice(index, 1);
+            cart.splice(index, 1); // Eliminar una única ocurrencia
         }
         setCartCookie(res, cart);
         res.writeHead(302, { Location: '/checkout' });
@@ -348,6 +295,7 @@ const server = http.createServer((req, res) => {
             </li>
         `).join('');
         
+
         const total = resumen.reduce((sum, p) => sum + p.precio, 0).toFixed(2);
 
         const html = `
