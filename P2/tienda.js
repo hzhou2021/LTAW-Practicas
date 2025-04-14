@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const PORT = 8002;
+const PORT = 8009;
 const ROOT_DIR = path.join(__dirname, 'public');
 
 function getLocalIP() {
@@ -34,22 +34,24 @@ function getUserFromCookie(req) {
     return match ? match.split('=')[1] : null;
 }
 
-function getCartFromCookie(req) {
-    const cookie = req.headers.cookie;
-    if (!cookie) return [];
-    const cartEntry = cookie.split(';').map(c => c.trim()).find(c => c.startsWith('cart='));
-    if (!cartEntry) return [];
-    const cartValue = decodeURIComponent(cartEntry.split('=')[1]);
-    return cartValue ? cartValue.split(',') : [];
+function getCartForUser(nombreUsuario) {
+    const tienda = JSON.parse(fs.readFileSync('tienda.json', 'utf-8'));
+    return tienda.carritos?.[nombreUsuario] || [];
 }
 
-function setCartCookie(res, cartArray) {
-    const encoded = encodeURIComponent(cartArray.join(','));
-    res.setHeader('Set-Cookie', `cart=${encoded}; Path=/`);
+function saveCartForUser(nombreUsuario, carritoArray) {
+    const tienda = JSON.parse(fs.readFileSync('tienda.json', 'utf-8'));
+    tienda.carritos = tienda.carritos || {};
+    tienda.carritos[nombreUsuario] = carritoArray;
+    fs.writeFileSync('tienda.json', JSON.stringify(tienda, null, 2));
 }
 
 function contarCarrito(req) {
-    const carrito = getCartFromCookie(req);
+    const user = getUserFromCookie(req);
+    if (!user) return 0;
+
+    const tienda = JSON.parse(fs.readFileSync('tienda.json', 'utf-8'));
+    const carrito = tienda.carritos?.[user] || [];
     return carrito.length;
 }
 
@@ -74,7 +76,6 @@ function obtenerLoginHTML(user, req) {
         `
         : `
         <a href="#" onclick="abrirLogin()"> 👤Iniciar sesión</a>
-        ${carritoHTML}
         <div id="modalLogin" class="modal-login">
             <h3>Iniciar sesión</h3>
             <input type="text" id="usuario" placeholder="Usuario"><br>
@@ -224,7 +225,7 @@ const server = http.createServer((req, res) => {
                 }
                 </script>
                 `
-                : `<p class="mensaje-login">Inicia sesión para comprar</p>`)
+                    : `<p class="mensaje-login">Inicia sesión para comprar</p>`)
                 : `<span class="productoStock">Producto agotado</span>`;
             const html = `
             <!DOCTYPE html>
@@ -279,24 +280,34 @@ const server = http.createServer((req, res) => {
     if (req.url.startsWith('/add-to-cart')) {
         const urlObj = new URL(req.url, `http://${req.headers.host}`);
         const producto = urlObj.searchParams.get('producto');
-        const cart = getCartFromCookie(req);
+        if (!user) {
+            res.writeHead(401, { 'Content-Type': 'text/html' });
+            return res.end('<h1>No autorizado</h1><p>Debes iniciar sesión para añadir al carrito.</p><a href="/">Volver</a>');
+        }
+        const cart = getCartForUser(user);
         cart.push(producto);
-        setCartCookie(res, cart);
+        saveCartForUser(user, cart);
         res.writeHead(302, { Location: '/' });
         res.end();
         return;
     }
 
-    // Ruta: Eliminar del carrito
-    if (req.url.startsWith('/remove-from-cart')) {
+    if (req.method === 'GET' && req.url.startsWith('/remove-from-cart')) {
         const urlObj = new URL(req.url, `http://${req.headers.host}`);
         const producto = urlObj.searchParams.get('producto');
-        let cart = getCartFromCookie(req);
-        const index = cart.indexOf(producto);
-        if (index !== -1) {
-            cart.splice(index, 1);
+    
+        if (!user) {
+            res.writeHead(401, { 'Content-Type': 'text/html' });
+            return res.end('<h1>No autorizado</h1><p>Debes iniciar sesión para modificar el carrito.</p><a href="/">Volver</a>');
         }
-        setCartCookie(res, cart);
+    
+        const carrito = getCartForUser(user);
+        const index = carrito.indexOf(producto);
+        if (index !== -1) {
+            carrito.splice(index, 1); // elimina una sola aparición
+            saveCartForUser(user, carrito);
+        }
+    
         res.writeHead(302, { Location: '/checkout' });
         res.end();
         return;
@@ -304,7 +315,7 @@ const server = http.createServer((req, res) => {
 
     // Ruta: Checkout GET
     if (req.method === 'GET' && req.url === '/checkout') {
-        const cart = getCartFromCookie(req);
+        const cart = getCartForUser(user);
         const tienda = JSON.parse(fs.readFileSync('tienda.json', 'utf-8'));
         const productos = tienda.productos;
 
@@ -315,7 +326,7 @@ const server = http.createServer((req, res) => {
                 <a href="/remove-from-cart?producto=${encodeURIComponent(p.nombre)}">❌</a>
             </li>
         `).join('');
-        
+
         const total = resumen.reduce((sum, p) => sum + p.precio, 0).toFixed(2);
 
         const html = `
@@ -328,7 +339,7 @@ const server = http.createServer((req, res) => {
             <label>Número de tarjeta: <input name="tarjeta" required></label><br><br>
             <button type="submit">Finalizar compra</button>
         </form>
-        <a href="/">Cancelar</a>
+        <a href="/">Volver</a>
         </body></html>`;
 
         res.writeHead(200, { 'Content-Type': 'text/html' });
@@ -338,19 +349,20 @@ const server = http.createServer((req, res) => {
 
     // Ruta: Checkout POST
     if (req.method === 'POST' && req.url === '/checkout') {
+        const user = getUserFromCookie(req);
+
         let body = '';
         req.on('data', chunk => body += chunk);
         req.on('end', () => {
             const params = new URLSearchParams(body);
             const direccion = params.get('direccion');
             const tarjeta = params.get('tarjeta');
-            const user = getUserFromCookie(req) || 'anonimo';
-            const cart = getCartFromCookie(req);
 
             const tienda = JSON.parse(fs.readFileSync('tienda.json', 'utf-8'));
             const productos = tienda.productos;
 
-            const resumen = cart.map(nombre => productos.find(p => p.nombre === nombre)).filter(Boolean);
+            const carritoUsuario = tienda.carritos?.[user] || [];
+            const resumen = carritoUsuario.map(nombre => productos.find(p => p.nombre === nombre)).filter(Boolean);
 
             // Verificar stock
             const sinStock = resumen.some(p => p.stock <= 0);
@@ -372,10 +384,12 @@ const server = http.createServer((req, res) => {
             tienda.pedidos = tienda.pedidos || [];
             tienda.pedidos.push(nuevoPedido);
 
+            // Vaciar carrito del usuario
+            tienda.carritos[user] = [];
+
+            // Guardar cambios
             fs.writeFileSync('tienda.json', JSON.stringify(tienda, null, 2));
 
-            // Vaciar carrito
-            res.setHeader('Set-Cookie', 'cart=; Path=/; Max-Age=0');
             res.writeHead(200, { 'Content-Type': 'text/html' });
             res.end('<h1>Gracias por tu compra</h1><a href="/">Volver al inicio</a>');
         });

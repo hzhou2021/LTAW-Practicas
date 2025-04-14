@@ -63,6 +63,10 @@
       "genero": "Acción/Aventura"
     }
   ],
+  "carritos": {
+    "root": [],
+    "usuario1": []
+  },
   "pedidos": [
     {
       "usuario": "",
