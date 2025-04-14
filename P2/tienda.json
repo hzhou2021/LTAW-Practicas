@@ -34,7 +34,7 @@
       "nombre": "Cuphead",
       "descripcion": "Embárcate en una aventura única con Cuphead y su hermano Mugman, luchando contra monstruos en escenarios inspirados en los dibujos animados de los años 30. ¡Desafía tus habilidades con combates frenéticos!",
       "precio": 19.99,
-      "stock": 10,
+      "stock": 9,
       "imagen": "Cuphead.jpeg",
       "genero": "Acción/Aventura"
     },
@@ -42,7 +42,7 @@
       "nombre": "Elden Ring",
       "descripcion": "Elden Ring, la épica aventura de rol en mundo abierto creada por FromSoftware. Con un vasto mundo por explorar, combate desafiante y una historia inmersiva, este juego te llevará a un viaje épico.",
       "precio": 59.99,
-      "stock": 10,
+      "stock": 9,
       "imagen": "eldenring.jpeg",
       "genero": "Soullike"
     },
@@ -76,6 +76,15 @@
       "tarjeta": "ES151 51915515 5151 61",
       "productos": [
         "Counter Strike 2"
+      ]
+    },
+    {
+      "nombre": "root",
+      "direccion": "calleja@gmail.com",
+      "tarjeta": "ES151 51915515 5151 61",
+      "productos": [
+        "Cuphead",
+        "Elden Ring"
       ]
     }
   ]

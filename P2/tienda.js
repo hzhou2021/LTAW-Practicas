@@ -224,7 +224,7 @@ const server = http.createServer((req, res) => {
                 }
                 </script>
                 `
-                : `'<p class="mensaje-login">Inicia sesión para comprar</p>'`)
+                : `<p class="mensaje-login">Inicia sesión para comprar</p>`)
                 : `<span class="productoStock">Producto agotado</span>`;
             const html = `
             <!DOCTYPE html>
