@@ -1,74 +1,82 @@
 {
-    "usuarios": [
-        {
-            "nombre": "root",
-            "real": "Administrador",
-            "correo": "root@tienda.com",
-            "clave": "root123"
-        },
-        {
-            "nombre": "usuario1",
-            "real": "Cliente Uno",
-            "correo": "usuario1@tienda.com",
-            "clave": "1234"
-        }
-    ],
-"productos": [
+  "usuarios": [
     {
-        "nombre": "FIFA 24",
-        "descripcion": "FIFA 24 es la última entrega de la famosa saga de videojuegos de fútbol. Con gráficos mejorados, jugabilidad más realista y nuevos modos de juego, ¡es la mejor manera de vivir el fútbol desde casa!",
-        "precio": 59.99,
-        "stock": 0,
-        "imagen": "fifa.jpeg",
-        "genero": "Deporte"
+      "nombre": "root",
+      "real": "Administrador",
+      "correo": "root@tienda.com",
+      "clave": "root123"
     },
     {
-        "nombre": "Counter Strike 2",
-        "descripcion": "¡La nueva versión de Counter Strike! Experimenta un juego más realista, con nuevas mecánicas, mapas y personajes. ¡La acción nunca se detiene!",
-        "precio": 29.99,
-        "stock": 1,
-        "imagen": "cs.jpeg",
-        "genero": "Shooter"
-    },
-    {
-        "nombre": "Cuphead",
-        "descripcion": "Embárcate en una aventura única con Cuphead y su hermano Mugman, luchando contra monstruos en escenarios inspirados en los dibujos animados de los años 30. ¡Desafía tus habilidades con combates frenéticos!",
-        "precio": 19.99,
-        "stock": 1,
-        "imagen": "Cuphead.jpeg",
-        "genero": "Acción/Aventura"
-    },
-    {
-        "nombre": "Elden Ring",
-        "descripcion": "Elden Ring, la épica aventura de rol en mundo abierto creada por FromSoftware. Con un vasto mundo por explorar, combate desafiante y una historia inmersiva, este juego te llevará a un viaje épico.",
-        "precio": 59.99,
-        "stock": 1,
-        "imagen": "eldenring.jpeg",
-        "genero": "Soullike"
-    },
-    {
-        "nombre": "League of Legends",
-        "descripcion": "Elden Ring, la épica aventura de rol en mundo abierto creada por FromSoftware. Con un vasto mundo por explorar, combate desafiante y una historia inmersiva, este juego te llevará a un viaje épico.",
-        "precio": 0,
-        "stock": 1,
-        "imagen": "lol.jpeg",
-        "genero": "Moba"
-    },
-    {
-        "nombre": "Minecraft",
-        "descripcion": "Minecraft es el juego de construcción por excelencia. Crea, explora y sobrevive en un mundo generado aleatoriamente. ¡Conviértete en el arquitecto de tu propio mundo y desafía a tus amigos a una aventura épica!",
-        "precio": 29.99,
-        "stock": 1,
-        "imagen": "minecraft.jpeg",
-        "genero": "Acción/Aventura"
+      "nombre": "usuario1",
+      "real": "Cliente Uno",
+      "correo": "usuario1@tienda.com",
+      "clave": "1234"
     }
-],
-"pedidos": [
+  ],
+  "productos": [
     {
-        "usuario": "",
-        "direccion_envio": "",
-        "numero_tarjeta": "",
-        "productos_comprados": []
+      "nombre": "FIFA 24",
+      "descripcion": "FIFA 24 es la última entrega de la famosa saga de videojuegos de fútbol. Con gráficos mejorados, jugabilidad más realista y nuevos modos de juego, ¡es la mejor manera de vivir el fútbol desde casa!",
+      "precio": 59.99,
+      "stock": 0,
+      "imagen": "fifa.jpeg",
+      "genero": "Deporte"
+    },
+    {
+      "nombre": "Counter Strike 2",
+      "descripcion": "¡La nueva versión de Counter Strike! Experimenta un juego más realista, con nuevas mecánicas, mapas y personajes. ¡La acción nunca se detiene!",
+      "precio": 29.99,
+      "stock": 10,
+      "imagen": "cs.jpeg",
+      "genero": "Shooter"
+    },
+    {
+      "nombre": "Cuphead",
+      "descripcion": "Embárcate en una aventura única con Cuphead y su hermano Mugman, luchando contra monstruos en escenarios inspirados en los dibujos animados de los años 30. ¡Desafía tus habilidades con combates frenéticos!",
+      "precio": 19.99,
+      "stock": 10,
+      "imagen": "Cuphead.jpeg",
+      "genero": "Acción/Aventura"
+    },
+    {
+      "nombre": "Elden Ring",
+      "descripcion": "Elden Ring, la épica aventura de rol en mundo abierto creada por FromSoftware. Con un vasto mundo por explorar, combate desafiante y una historia inmersiva, este juego te llevará a un viaje épico.",
+      "precio": 59.99,
+      "stock": 10,
+      "imagen": "eldenring.jpeg",
+      "genero": "Soullike"
+    },
+    {
+      "nombre": "League of Legends",
+      "descripcion": "Elden Ring, la épica aventura de rol en mundo abierto creada por FromSoftware. Con un vasto mundo por explorar, combate desafiante y una historia inmersiva, este juego te llevará a un viaje épico.",
+      "precio": 0,
+      "stock": 10,
+      "imagen": "lol.jpeg",
+      "genero": "Moba"
+    },
+    {
+      "nombre": "Minecraft",
+      "descripcion": "Minecraft es el juego de construcción por excelencia. Crea, explora y sobrevive en un mundo generado aleatoriamente. ¡Conviértete en el arquitecto de tu propio mundo y desafía a tus amigos a una aventura épica!",
+      "precio": 29.99,
+      "stock": 10,
+      "imagen": "minecraft.jpeg",
+      "genero": "Acción/Aventura"
     }
-]
+  ],
+  "pedidos": [
+    {
+      "usuario": "",
+      "direccion_envio": "",
+      "numero_tarjeta": "",
+      "productos_comprados": []
+    },
+    {
+      "nombre": "usuario1",
+      "direccion": "calleja@gmail.com",
+      "tarjeta": "ES151 51915515 5151 61",
+      "productos": [
+        "Counter Strike 2"
+      ]
+    }
+  ]
 }
