@@ -67,14 +67,5 @@
     "root": [],
     "usuario1": []
   },
-  "pedidos": [
-    {
-      "nombre": "usuario1",
-      "direccion": "calleja@gmail.com",
-      "tarjeta": "ES151 51915515 5151 61",
-      "productos": [
-        "Elden Ring"
-      ]
-    }
-  ]
+  "pedidos": []
 }
