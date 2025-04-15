@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const PORT = 8009;
+const PORT = 8004;
 const ROOT_DIR = path.join(__dirname, 'public');
 
 function getLocalIP() {

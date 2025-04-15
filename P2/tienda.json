@@ -16,7 +16,7 @@
   "productos": [
     {
       "nombre": "FIFA 24",
-      "descripcion": "FIFA 24 es la última entrega de la famosa saga de videojuegos de fútbol. Con gráficos mejorados, jugabilidad más realista y nuevos modos de juego, ¡es la mejor manera de vivir el fútbol desde casa!",
+      "descripcion": "FIFA 24 es la última entrega de la famosa saga de videojuegos de fútbol. Con gráficos mejorados, jugabilidad más realista y nuevos modos de juego, ¡Es la mejor manera de vivir el fútbol desde casa!",
       "precio": 59.99,
       "stock": 0,
       "imagen": "fifa.jpeg",
