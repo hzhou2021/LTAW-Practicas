@@ -132,53 +132,7 @@ const server = http.createServer((req, res) => {
     const contentType = mimeTypes[extname] || 'application/octet-stream';
     const user = getUserFromCookie(req);
 
-    if (req.method === 'POST' && req.url === '/login') {
-        let body = '';
-        req.on('data', chunk => { body += chunk; });
-        req.on('end', () => {
-            const { nombre, clave } = JSON.parse(body);
-            const tienda = JSON.parse(fs.readFileSync('tienda.json', 'utf-8'));
-            const usuario = tienda.usuarios.find(u => u.nombre === nombre && u.clave === clave);
-            if (usuario) {
-                res.setHeader('Set-Cookie', `user=${usuario.nombre}; HttpOnly; SameSite=Strict`);
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ ok: true }));
-            } else {
-                res.writeHead(401, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ ok: false }));
-            }
-        });
-        return;
-    }
-
-    if (req.method === 'POST' && req.url === '/logout') {
-        res.setHeader('Set-Cookie', 'user=; Max-Age=0; HttpOnly; SameSite=Strict');
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ ok: true }));
-        return;
-    }
-
-    if (req.method === 'GET' && req.url.startsWith('/buscar')) {
-        const urlObj = new URL(req.url, `http://${req.headers.host}`);
-        const termino = urlObj.searchParams.get('q')?.toLowerCase() || '';
-        
-        if (termino.length < 3) {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            return res.end(JSON.stringify([]));
-        }
-    
-        const tienda = JSON.parse(fs.readFileSync('tienda.json', 'utf-8'));
-        const coincidencias = tienda.productos.filter(p => 
-            p.nombre.toLowerCase().includes(termino)
-        ).map(p => ({
-            nombre: p.nombre,
-            slug: slugify(p.nombre)
-        }));
-    
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify(coincidencias));
-    }    
-
+    // Página principal de mi web 
     if (req.url === '/' || req.url === '/index.html') {
         const jsonPath = path.join(__dirname, 'tienda.json');
         fs.readFile(jsonPath, 'utf8', (err, jsonData) => {
@@ -254,6 +208,57 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Ruta: Para el Login
+    if (req.method === 'POST' && req.url === '/login') {
+        let body = '';
+        req.on('data', chunk => { body += chunk; });
+        req.on('end', () => {
+            const { nombre, clave } = JSON.parse(body);
+            const tienda = JSON.parse(fs.readFileSync('tienda.json', 'utf-8'));
+            const usuario = tienda.usuarios.find(u => u.nombre === nombre && u.clave === clave);
+            if (usuario) {
+                res.setHeader('Set-Cookie', `user=${usuario.nombre}; HttpOnly; SameSite=Strict`);
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: true }));
+            } else {
+                res.writeHead(401, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false }));
+            }
+        });
+        return;
+    }
+
+    // Ruta: Para el logout
+    if (req.method === 'POST' && req.url === '/logout') {
+        res.setHeader('Set-Cookie', 'user=; Max-Age=0; HttpOnly; SameSite=Strict');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true }));
+        return;
+    }
+
+    // Ruta: Buscador de productos
+    if (req.method === 'GET' && req.url.startsWith('/buscar')) {
+        const urlObj = new URL(req.url, `http://${req.headers.host}`);
+        const termino = urlObj.searchParams.get('q')?.toLowerCase() || '';
+
+        if (termino.length < 3) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify([]));
+        }
+
+        const tienda = JSON.parse(fs.readFileSync('tienda.json', 'utf-8'));
+        const coincidencias = tienda.productos.filter(p =>
+            p.nombre.toLowerCase().includes(termino)
+        ).map(p => ({
+            nombre: p.nombre,
+            slug: slugify(p.nombre)
+        }));
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(coincidencias));
+    }
+
+    // Página de cada producto
     if (req.url.startsWith('/producto/')) {
         const slug = req.url.replace('/producto/', '').toLowerCase();
         const jsonPath = path.join(__dirname, 'tienda.json');
@@ -349,26 +354,27 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Ruta: Descontar del carrito
     if (req.method === 'GET' && req.url.startsWith('/remove-from-cart')) {
         const urlObj = new URL(req.url, `http://${req.headers.host}`);
         const producto = urlObj.searchParams.get('producto');
-    
+
         if (!user) {
             res.writeHead(401, { 'Content-Type': 'text/html' });
             return res.end('<h1>No autorizado</h1><p>Debes iniciar sesión para modificar el carrito.</p><a href="/">Volver</a>');
         }
-    
+
         const carrito = getCartForUser(user);
         const index = carrito.indexOf(producto);
         if (index !== -1) {
             carrito.splice(index, 1); // elimina una sola aparición
             saveCartForUser(user, carrito);
         }
-    
+
         res.writeHead(302, { Location: '/checkout' });
         res.end();
         return;
-    }    
+    }
 
     // Ruta: Checkout GET
     if (req.method === 'GET' && req.url === '/checkout') {
@@ -453,7 +459,7 @@ const server = http.createServer((req, res) => {
         });
         return;
     }
-
+    // Listado de archivos
     if (req.url === '/ls') {
         fs.readdir(__dirname, (err, files) => {
             if (err) {
@@ -485,7 +491,7 @@ const server = http.createServer((req, res) => {
         });
         return;
     }
-
+    // Página de Error 404
     fs.readFile(filePath, (err, data) => {
         if (err) {
             if (err.code === 'ENOENT') {
