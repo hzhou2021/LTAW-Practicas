@@ -337,6 +337,7 @@ const server = http.createServer((req, res) => {
 
         const html = `
         <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Checkout</title></head><body>
+        <link rel="stylesheet" href="/checkout.css">
         <h1>Checkout</h1>
         <ul>${resumenHTML}</ul>
         <p>Total: $${total}</p>
