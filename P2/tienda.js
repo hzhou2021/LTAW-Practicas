@@ -398,7 +398,7 @@ const server = http.createServer((req, res) => {
             fs.writeFileSync('tienda.json', JSON.stringify(tienda, null, 2));
 
             res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.end('<h1>Gracias por tu compra</h1><a href="/">Volver al inicio</a>');
+            res.end('<div class="gracias-container"><link rel="stylesheet" href="/styles.css"><h1>Gracias por tu compra</h1><a href="/">Volver al inicio</a></div>');
         });
         return;
     }
