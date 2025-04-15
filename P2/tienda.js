@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const PORT = 8004;
+const PORT = 8002;
 const ROOT_DIR = path.join(__dirname, 'public');
 
 function getLocalIP() {
@@ -158,6 +158,27 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    if (req.method === 'GET' && req.url.startsWith('/buscar')) {
+        const urlObj = new URL(req.url, `http://${req.headers.host}`);
+        const termino = urlObj.searchParams.get('q')?.toLowerCase() || '';
+        
+        if (termino.length < 3) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify([]));
+        }
+    
+        const tienda = JSON.parse(fs.readFileSync('tienda.json', 'utf-8'));
+        const coincidencias = tienda.productos.filter(p => 
+            p.nombre.toLowerCase().includes(termino)
+        ).map(p => ({
+            nombre: p.nombre,
+            slug: slugify(p.nombre)
+        }));
+    
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(coincidencias));
+    }    
+
     if (req.url === '/' || req.url === '/index.html') {
         const jsonPath = path.join(__dirname, 'tienda.json');
         fs.readFile(jsonPath, 'utf8', (err, jsonData) => {
@@ -179,22 +200,52 @@ const server = http.createServer((req, res) => {
             const html = `
                 <!DOCTYPE html>
                 <html lang="es">
+
                 <head>
                     <meta charset="UTF-8">
                     <title>V-Games</title>
                     <link rel="stylesheet" href="/styles.css">
                 </head>
+
                 <body>
                     <header class="Titulo">
                         <div>V-Games</div>
                         <div class="iconos">${loginHTML}<a href="#"></a></div>
                     </header>
-                    <main><section class="productos">${productosHTML}</section></main>
+                    <main>
+                        <div class="busqueda-autocompletar">
+                            <input type="text" id="busqueda" placeholder="Buscar producto..." autocomplete="off">
+                            <ul id="sugerencias"></ul>
+                        </div>
+                        <section class="productos">${productosHTML}</section>
+                    </main>
                     <footer>
                         <p>&copy; 2025 V-Games. Todos los derechos reservados.</p>
                         <p>Contacto: <a href="mailto:contacto@mitienda.com">contacto@mitienda.com</a></p>
                     </footer>
+                    <script>
+                        document.getElementById('busqueda').addEventListener('input', async function () {
+                            const query = this.value.trim();
+                            const sugerencias = document.getElementById('sugerencias');
+                            sugerencias.innerHTML = '';
+
+                            if (query.length >= 3) {
+                                const res = await fetch('/buscar?q=' + encodeURIComponent(query));
+                                const resultados = await res.json();
+
+                                resultados.forEach(prod => {
+                                    const li = document.createElement('li');
+                                    li.textContent = prod.nombre;
+                                    li.addEventListener('click', () => {
+                                        window.location.href = '/producto/' + prod.slug;
+                                    });
+                                    sugerencias.appendChild(li);
+                                });
+                            }
+                        });
+                    </script>
                 </body>
+
                 </html>`;
 
             res.writeHead(200, { 'Content-Type': 'text/html' });

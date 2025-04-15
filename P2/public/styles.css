@@ -21,6 +21,43 @@ body {
 }
 
 /* Buscador de Productos */
+.busqueda-autocompletar {
+    width: 40%;
+    margin: 2em auto; /* centra horizontalmente */
+    position: relative;
+}
+
+#busqueda {
+    width: 100%;
+    padding: 0.5em;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+
+#sugerencias {
+    position: absolute;
+    width: 100%;
+    background: white;
+    border: 1px solid #ccc;
+    border-top: none;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+#sugerencias li {
+    padding: 0.5em;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#sugerencias li:hover {
+    background-color: #f0f0f0;
+}
 
 /* Login */
 .modal-login {
