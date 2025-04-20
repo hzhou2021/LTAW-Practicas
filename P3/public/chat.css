@@ -2,12 +2,21 @@ body {
   margin: 0;
   font-family: Arial, sans-serif;
   display: flex;
-  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #ececec;
 }
 
 .chat-container {
   display: flex;
-  width: 100%;
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  background-color: #fff;
 }
 
 .sidebar {
@@ -56,6 +65,12 @@ body {
   overflow-y: auto;
   padding: 15px;
   background-color: #fff;
+}
+
+.chat-display, .message {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .message {
