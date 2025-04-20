@@ -95,7 +95,13 @@ chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const msg = msgEntry.value.trim();
   if (msg) {
-    socket.send(msg);
+    // Si estamos en General, enviar mensaje público
+    if (activeChat === 'General') {
+      socket.send(msg);
+    } else {
+      // Enviar como DM: se construye el comando automáticamente
+      socket.send(`/dm ${activeChat} ${msg}`);
+    }
     msgEntry.value = "";
     msgEntry.style.height = "auto";
     socket.emit("typing", false);
