@@ -55,12 +55,15 @@ io.on('connection', (socket) => {
         case '/help':
           socket.emit('message', `
             🛠️ Comandos disponibles:
-            /help - Lista de comandos
-            /list - Usuarios conectados
-            /hello - Saludo del servidor
-            /date - Fecha actual
+            /help  -Lista de comandos
+            /list  -Usuarios conectados
+            /hello  -Saludo del servidor
+            /date  -Fecha actual
             /nick "nuevo_nombre"      -Cambiar tu nickname
             /dm "usuario" "mensaje"       -Enviar mensaje directo
+
+            🛠️ Funciones: 
+            Shift + Enter -Salto de linea al escribir
           `);
           break;
 
@@ -91,7 +94,7 @@ io.on('connection', (socket) => {
         case '/dm':
           const targetName = args[1];
           const message = args.slice(2).join(' ');
-          const targetSocketId = Object.keys(users).find(id => users[id] === targetName);
+          const targetSocketId = Object.entries(users).find(([_, name]) => name === targetName)?.[0];
           if (targetSocketId && message) {
             const sender = users[socket.id];
             io.to(targetSocketId).emit('privateMessage', { from: sender, to: targetName, text: message });

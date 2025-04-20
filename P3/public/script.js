@@ -64,12 +64,14 @@ socket.on("message", (msg) => {
   notifSound.play();
 });
 
-// recibe un mensaje privado y lo agrega en el chat correspondiente
+// Recibe un mensaje privado y lo guarda/visualiza en un único canal compartido entre ambos usuarios
 socket.on("privateMessage", ({ from, to, text }) => {
   const other = from === myName ? to : from;
   const formatted = from === myName
+
     ? `📤 Tú → @${to}: ${text}`
     : `📩 @${from}: ${text}`;
+
   addMessage(other, formatted);
   updateChatList();
   notifSound.play();
@@ -90,23 +92,37 @@ socket.on("userList", (users) => {
   });
 });
 
-// Maneja el envío del formulario de mensaje, envía el mensaje al servidor y resetea el campo
+// Enviar mensajes desde el formulario
 chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const msg = msgEntry.value.trim();
   if (msg) {
-    // Si estamos en General, enviar mensaje público
     if (activeChat === 'General') {
+      // Si estamos en el chat general, enviar mensaje público
       socket.send(msg);
     } else {
-      // Enviar como DM: se construye el comando automáticamente
-      socket.send(`/dm ${activeChat} ${msg}`);
+      // Si estás en General, envía públicamente.
+      // Si estás en un DM, usa el nombre del canal como destinatario.
+      const recipient = activeChat;
+      socket.send(`/dm ${recipient} ${msg}`);
+
     }
+
+    // Limpiar entrada de texto y notificar que dejamos de escribir
     msgEntry.value = "";
     msgEntry.style.height = "auto";
     socket.emit("typing", false);
   }
 });
+
+// Permitir envío con Enter (sin Shift)
+msgEntry.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();           // Evita salto de línea con Shift + Enter
+    chatForm.requestSubmit();     // Envía el formulario
+  }
+});
+
 
 // Detecta cuando el usuario comienza o deja de escribir para notificar al servidor
 msgEntry.addEventListener("input", () => {
