@@ -89,16 +89,18 @@ io.on('connection', (socket) => {
           break;
 
         case '/dm':
-          const target = args[1];
-          const directMsg = args.slice(2).join(' ');
-          const targetId = Object.keys(users).find(key => users[key] === target);
-          if (targetId && directMsg) {
-            io.to(targetId).emit('message', `📩 [Privado de ${users[socket.id]}]: ${directMsg}`);
-            socket.emit('message', `📤 [Privado a ${target}]: ${directMsg}`);
+          const targetName = args[1];
+          const message = args.slice(2).join(' ');
+          const targetSocketId = Object.keys(users).find(id => users[id] === targetName);
+          if (targetSocketId && message) {
+            const sender = users[socket.id];
+            io.to(targetSocketId).emit('privateMessage', { from: sender, to: targetName, text: message });
+            socket.emit('privateMessage', { from: sender, to: targetName, text: message });
           } else {
             socket.emit('message', `❌ Usuario no encontrado o mensaje vacío.`);
           }
           break;
+
 
         default:
           socket.emit('message', `❓ Comando desconocido. Escribe /help para ver opciones.`);

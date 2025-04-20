@@ -8,24 +8,26 @@
 </head>
 <body>
   <div class="chat-container">
-    <header>
-      <h1>💬 4UM </h1>
-      <p id="user-info">Conectado como <span id="nickname">usuario</span></p>
-    </header>
+    <aside class="sidebar">
+      <header>
+        <h1>💬 4UM</h1>
+        <p>Conectado como <span id="nickname">usuario</span></p>
+      </header>
+      <ul id="chat-list" class="chat-list"></ul>
+      <section class="users">
+        <h2>Usuarios</h2>
+        <ul id="user-list"></ul>
+      </section>
+    </aside>
 
-    <div id="display" class="chat-display"></div>
-
-    <p id="typing" class="typing-indicator"></p>
-
-    <form id="chat-form">
-      <textarea id="msg_entry" rows="1" placeholder="Escribe un mensaje o comando..."></textarea>
-      <button type="submit">Enviar</button>
-    </form>
-
-    <section class="sidebar">
-      <h2>Usuarios Conectados</h2>
-      <ul id="user-list"></ul>
-    </section>
+    <main class="chat-main">
+      <div id="display" class="chat-display"></div>
+      <p id="typing" class="typing-indicator"></p>
+      <form id="chat-form" class="chat-form">
+        <textarea id="msg_entry" rows="1" placeholder="Escribe un mensaje o comando..."></textarea>
+        <button type="submit">Enviar</button>
+      </form>
+    </main>
   </div>
 
   <audio id="notif-sound" src="sonido_notificacion.mp3" preload="auto"></audio>
