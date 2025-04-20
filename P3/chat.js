@@ -32,21 +32,15 @@ function getUserList() {
 io.on('connection', (socket) => {
   console.log(`** NUEVA CONEXIÓN (${socket.id}) **`.yellow);
 
-  // Asignar nickname temporal
   users[socket.id] = 'Usuario-' + socket.id.substring(0, 4);
 
-  // Enviar mensaje privado de bienvenida
+  socket.emit("nickname", users[socket.id]);
+
   socket.emit('message', `👋 Bienvenido al chat, ${users[socket.id]}! Escribe /help para ver los comandos.`);
-
-  // Notificar a otros
   socket.broadcast.emit('message', `🔔 ${users[socket.id]} se ha conectado`);
-
-  // Actualizar lista de usuarios conectados
   io.emit('userList', getUserList());
 
-  // Evento de mensaje
   socket.on('message', (msg) => {
-    // Comandos
     if (msg.startsWith('/')) {
       const args = msg.split(' ');
       const command = args[0].toLowerCase();
@@ -55,15 +49,12 @@ io.on('connection', (socket) => {
         case '/help':
           socket.emit('message', `
             🛠️ Comandos disponibles:
-            /help  -Lista de comandos
-            /list  -Usuarios conectados
-            /hello  -Saludo del servidor
-            /date  -Fecha actual
-            /nick "nuevo_nombre"      -Cambiar tu nickname
-            /dm "usuario" "mensaje"       -Enviar mensaje directo
-
-            🛠️ Funciones: 
-            Shift + Enter -Salto de linea al escribir
+            /help - Lista de comandos
+            /list - Usuarios conectados
+            /hello - Saludo del servidor
+            /date - Fecha actual
+            /nick nuevo_nombre - Cambiar tu nickname
+            /dm usuario mensaje - Enviar mensaje directo
           `);
           break;
 
@@ -84,6 +75,7 @@ io.on('connection', (socket) => {
             const oldNick = users[socket.id];
             const newNick = args[1];
             users[socket.id] = newNick;
+            socket.emit('nickname', newNick);
             socket.emit('message', `✅ Nickname actualizado: ${oldNick} → ${newNick}`);
             io.emit('userList', getUserList());
           } else {
@@ -91,31 +83,41 @@ io.on('connection', (socket) => {
           }
           break;
 
-        case '/dm':
+        case '/dm': {
           const targetName = args[1];
           const message = args.slice(2).join(' ');
-          const targetSocketId = Object.entries(users).find(([_, name]) => name === targetName)?.[0];
-          if (targetSocketId && message) {
-            const sender = users[socket.id];
-            io.to(targetSocketId).emit('privateMessage', { from: sender, to: targetName, text: message });
-            socket.emit('privateMessage', { from: sender, to: targetName, text: message });
+          const targetEntry = Object.entries(users).find(([_, name]) => name === targetName);
+          if (targetEntry && message) {
+            const [targetSocketId, targetNick] = targetEntry;
+            const senderNick = users[socket.id];
+            io.to(targetSocketId).emit('privateMessage', {
+              from: senderNick,
+              fromId: socket.id,
+              to: targetNick,
+              toId: targetSocketId,
+              text: message
+            });
+            socket.emit('privateMessage', {
+              from: senderNick,
+              fromId: socket.id,
+              to: targetNick,
+              toId: targetSocketId,
+              text: message
+            });
           } else {
             socket.emit('message', `❌ Usuario no encontrado o mensaje vacío.`);
           }
           break;
-
+        }
 
         default:
           socket.emit('message', `❓ Comando desconocido. Escribe /help para ver opciones.`);
       }
-
     } else {
-      // Mensaje normal, reenviarlo a todos
       io.emit('message', `💬 ${users[socket.id]}: ${msg}`);
     }
   });
 
-  // Indicador de escritura
   socket.on('typing', (status) => {
     socket.broadcast.emit('typing', {
       user: users[socket.id],
@@ -131,7 +133,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// ACceso al chat
 server.listen(PORT, '0.0.0.0', () => {
   const localIP = getLocalIP();
   console.log(`Servidor disponible en:`);

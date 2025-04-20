@@ -1,6 +1,7 @@
 const socket = io();
 
 let myName = '';
+let myId = '';
 let activeChat = 'General';
 const chats = { General: [] };
 
@@ -40,7 +41,19 @@ function updateChatList() {
   chatList.innerHTML = '';
   Object.keys(chats).forEach(chat => {
     const chatItem = document.createElement("li");
-    chatItem.textContent = chat;
+    let label;
+    if (chat === 'General') {
+      label = 'General';
+    } else {
+      const info = chats[chat].meta;
+      if (info) {
+        // Mostrar solo el nombre del otro usuario
+        label = info.other;
+      } else {
+        label = chat;
+      }
+    }
+    chatItem.textContent = label;
     chatItem.className = chat === activeChat ? "chat-item active" : "chat-item";
     chatItem.onclick = () => {
       activeChat = chat;
@@ -55,6 +68,7 @@ function updateChatList() {
 socket.on("nickname", (nick) => {
   myName = nick;
   nicknameDisplay.textContent = nick;
+  myId = socket.id;
 });
 
 // recibe un mensaje general y lo agrega al chat general
@@ -65,15 +79,27 @@ socket.on("message", (msg) => {
 });
 
 // Recibe un mensaje privado y lo guarda/visualiza en un único canal compartido entre ambos usuarios
-socket.on("privateMessage", ({ from, to, text }) => {
-  const other = from === myName ? to : from;
+socket.on("privateMessage", ({ from, fromId, to, toId, text }) => {
+  const chatId = [fromId, toId].sort().join('↔');
   const formatted = from === myName
-
     ? `📤 Tú → @${to}: ${text}`
     : `📩 @${from}: ${text}`;
 
-  addMessage(other, formatted);
-  updateChatList();
+  addMessage(chatId, formatted);
+
+  if (!chats[chatId].meta) {
+    const otherName = from === myName ? to : from;
+    chats[chatId].meta = {
+      other: otherName
+    };
+  }
+
+  if (activeChat !== chatId) {
+    activeChat = chatId;
+    updateChatList();
+    renderMessages();
+  }
+
   notifSound.play();
 });
 
@@ -98,17 +124,12 @@ chatForm.addEventListener("submit", (e) => {
   const msg = msgEntry.value.trim();
   if (msg) {
     if (activeChat === 'General') {
-      // Si estamos en el chat general, enviar mensaje público
       socket.send(msg);
     } else {
-      // Si estás en General, envía públicamente.
-      // Si estás en un DM, usa el nombre del canal como destinatario.
-      const recipient = activeChat;
-      socket.send(`/dm ${recipient} ${msg}`);
-
+      const recipientName = chats[activeChat].meta?.other;
+      socket.send(`/dm ${recipientName} ${msg}`);
     }
 
-    // Limpiar entrada de texto y notificar que dejamos de escribir
     msgEntry.value = "";
     msgEntry.style.height = "auto";
     socket.emit("typing", false);
@@ -122,7 +143,6 @@ msgEntry.addEventListener("keydown", (e) => {
     chatForm.requestSubmit();     // Envía el formulario
   }
 });
-
 
 // Detecta cuando el usuario comienza o deja de escribir para notificar al servidor
 msgEntry.addEventListener("input", () => {
