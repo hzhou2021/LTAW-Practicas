@@ -49,12 +49,15 @@ io.on('connection', (socket) => {
         case '/help':
           socket.emit('message', `
             🛠️ Comandos disponibles:
-            /help - Lista de comandos
-            /list - Usuarios conectados
-            /hello - Saludo del servidor
-            /date - Fecha actual
-            /nick nuevo_nombre - Cambiar tu nickname
-            /dm usuario mensaje - Enviar mensaje directo
+            /help   - Lista de comandos
+            /list   - Usuarios conectados
+            /hello   - Saludo del servidor
+            /date   - Fecha actual
+            /nick nuevo_nombre   - Cambiar tu nickname
+            /dm usuario mensaje   - Enviar mensaje directo
+
+            🛠️ funciones:
+            Shift + Enter   - Salto de linea al escribri
           `);
           break;
 
