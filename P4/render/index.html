@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Servidor de Chat - Panel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>🖥️ Panel del Servidor de Chat</h1>
+
+  <section id="info">
+    <p><strong>Versión Node:</strong> <span id="node-version">...</span></p>
+    <p><strong>Versión Electron:</strong> <span id="electron-version">...</span></p>
+    <p><strong>Versión Chrome:</strong> <span id="chrome-version">...</span></p>
+    <p><strong>URL de conexión:</strong> <span id="connection-url">...</span></p>
+    <hr>
+    <p><strong>Arquitectura:</strong> <span id="arch">...</span></p>
+    <p><strong>Plataforma:</strong> <span id="platform">...</span></p>
+    <p><strong>Directorio actual:</strong> <span id="cwd">...</span></p>
+  </section>
+
+  <section>
+    <button id="test-btn">Enviar mensaje de prueba</button>
+  </section>
+
+  <section id="log">
+    <h2>Mensajes del servidor:</h2>
+    <div id="messages"></div>
+  </section>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
