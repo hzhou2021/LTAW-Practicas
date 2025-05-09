@@ -1,4 +1,5 @@
 const { ipcRenderer } = require('electron');
+const QRCode = require('qrcode');
 
 const nodeVersionEl = document.getElementById("node-version");
 const electronVersionEl = document.getElementById("electron-version");
@@ -9,16 +10,23 @@ const platformEl = document.getElementById("platform");
 const cwdEl = document.getElementById("cwd");
 const testBtn = document.getElementById("test-btn");
 const messagesContainer = document.getElementById("messages");
+const qrCanvas = document.getElementById("qr-code");
 
-// Escuchar información enviada por el proceso principal
+// Escuchar datos enviados desde el proceso principal
 ipcRenderer.on('server-info', (event, data) => {
+  const url = `http://${data.ip}:${data.port}`;
+
+  // Mostrar versiones y URL
   nodeVersionEl.textContent = data.versions.node;
   electronVersionEl.textContent = data.versions.electron;
   chromeVersionEl.textContent = data.versions.chrome;
-
-  const url = `http://${data.ip}:${data.port}`;
   connectionUrlEl.textContent = url;
-});
+
+  // Generar código QR
+  QRCode.toCanvas(qrCanvas, url, { width: 200 }, (err) => {
+    if (err) console.error("Error generando QR:", err);
+  });
+})
 
 // Mostrar información del sistema directamente desde Node.js
 archEl.textContent = process.arch;
@@ -27,8 +35,8 @@ cwdEl.textContent = process.cwd();
 
 // Enviar mensaje de prueba
 testBtn.addEventListener('click', () => {
-  ipcRenderer.send('send-test-message', "📣 Mensaje de prueba desde la GUI");
-  addMessageToLog("📤 Mensaje de prueba enviado desde la GUI");
+  ipcRenderer.send('send-test-message');
+  addMessageToLog("📤 Mensaje de prueba enviado desde la GUI.");
 });
 
 // Mostrar mensajes en el log

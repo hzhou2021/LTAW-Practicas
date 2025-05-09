@@ -7,7 +7,7 @@ let mainWindow = null;
 app.whenReady().then(() => {
   console.log("🟢 Electron listo. Lanzando servidor y GUI...");
 
-  // Iniciar el servidor de chat
+  // Iniciar el servidor de chatWeb
   const serverInfo = startChatServer();
 
   // Crear ventana principal
